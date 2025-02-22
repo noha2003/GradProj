@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gradproj/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
 //fghjjj
 ///dfjgdl
 class MyApp extends StatelessWidget {
@@ -12,11 +14,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        //  colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: 'Cairo',
         useMaterial3: true,
       ),
+      debugShowCheckedModeBanner: false,
+      home: const SplashScreen(),
     );
   }
 }//dddddd

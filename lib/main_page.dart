@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/custombutton.dart';
+import 'package:gradproj/back_button.dart';
+import 'package:gradproj/voting/custom_button.dart';
+import 'package:gradproj/election_district.dart';
 import 'package:gradproj/home.dart';
+import 'package:gradproj/voting/voting_lists.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -12,25 +15,30 @@ class MainPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 124),
+              child: CustomButton(
+                  icon: Icons.list_alt,
+                  text: "القوائم الانتخابية",
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (BuildContext context) {
+                      return ElectionDistrictsScreen(forView: true);
+                    }));
+                  }),
+            ),
+            const SizedBox(height: 66),
             CustomButton(
-              icon: Icons.list_alt,
-              text: "القوائم الانتخابية",
-              onTap: () => Navigator.pushNamed(context, '/electionLists'),
-            ),
-            const SizedBox(height: 20),
-            CustomButton(
-              icon: Icons.how_to_vote,
-              text: "ابدأ التصويت",
-              onTap: () => Navigator.pushNamed(context, '/startVoting'),
-            ),
-            const SizedBox(height: 40),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                "رجوع",
-                style: TextStyle(fontSize: 18, color: Colors.red[800]),
-              ),
-            ),
+                icon: Icons.how_to_vote,
+                text: "ابدأ التصويت",
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (BuildContext context) {
+                    return VotingLists();
+                  }));
+                }),
+            const SizedBox(height: 124),
+               const CustomBackButton()
           ],
         ),
       ),
