@@ -69,7 +69,7 @@ class ElectionListsScreen extends StatelessWidget {
                       number: lists[index]["number"] ?? "3");
                 }),
          ),
-        const SizedBox(height: 46),
+        const SizedBox(height: 30),
         const CustomBackButton(),
         const SizedBox(height: 30),
       ]),

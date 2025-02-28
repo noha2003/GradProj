@@ -91,7 +91,7 @@ class Candidates extends StatelessWidget {
                   },
                                ),
                ),
-            
+             const SizedBox(height: 30),
             const CustomBackButton(),
             const SizedBox(height: 30),
           ],

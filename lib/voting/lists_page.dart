@@ -31,8 +31,8 @@ class ListsPage extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
           Image.asset(
             image,
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             fit: BoxFit.cover,
           ),
           const Spacer(flex: 1),
@@ -42,10 +42,10 @@ class ListsPage extends StatelessWidget {
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text("اسم القائمة: $name",
                   style:
-                      const TextStyle(fontSize: 20, color: Color(0xFF7A0000))),
+                      const TextStyle(fontSize: 18, color: Color(0xFF7A0000))),
               Text("رقم القائمة: $number",
                   style:
-                      const TextStyle(fontSize: 20, color: Color(0xFF7A0000))),
+                      const TextStyle(fontSize: 18, color: Color(0xFF7A0000))),
             ]),
           ),
         ]),

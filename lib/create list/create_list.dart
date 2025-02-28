@@ -67,6 +67,7 @@ class _FormScreenState extends State<FormScreen> {
           children: [
             const Expanded(
               child: CustomLabeledTextField(label: 'الرقم الوطني'),
+          
             ),
             const SizedBox(width: 8),
             const Expanded(

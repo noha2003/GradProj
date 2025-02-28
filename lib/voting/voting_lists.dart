@@ -62,8 +62,9 @@ class VotingLists extends StatelessWidget {
                     });
               }),
         ),
+         const SizedBox(height: 10),
         const CustomBackButton(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 20),
       ]),
     ));
   }
