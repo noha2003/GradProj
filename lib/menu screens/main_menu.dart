@@ -31,7 +31,7 @@ class MenuScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               const Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     CircleAvatar(
@@ -55,7 +55,7 @@ class MenuScreen extends StatelessWidget {
                           textAlign: TextAlign.right,
                         ),
                         Text("2000000096",
-                            style:TextStyle(
+                            style: TextStyle(
                                 fontSize: 15,
                                 color: Colors.black54,
                                 fontWeight: FontWeight.normal),
@@ -82,9 +82,9 @@ class MenuScreen extends StatelessWidget {
                 const Divider(),
                 _menuItem(
                     context, Icons.help, "مركز المساعدة", const FAQPage()),
-                    const Divider(),
-                _menuItem(
-                    context, Icons.logout_outlined, 'تسجيل الخروج', const LoginScreen()),
+                const Divider(),
+                _menuItem(context, Icons.logout_outlined, 'تسجيل الخروج',
+                    const LoginScreen()),
               ],
             ),
           ),
@@ -104,13 +104,13 @@ class MenuScreen extends StatelessWidget {
               ? const Color.fromRGBO(122, 0, 0, 1)
               : const Color.fromARGB(124, 4, 0, 0)),
       title: Text(title,
-          style:TextStyle(
+          style: TextStyle(
               color:
                   isLogout ? const Color.fromRGBO(122, 0, 0, 1) : Colors.black,
               fontSize: 18,
               fontWeight: FontWeight.normal)),
       onTap: () {
-        Navigator.pop(context);
+        // Navigator.pop(context);
         _navigateTo(context, screen);
       },
     );

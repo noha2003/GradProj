@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_to_home_button.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 
 class SubmitVoting extends StatelessWidget {
   const SubmitVoting({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
         child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,

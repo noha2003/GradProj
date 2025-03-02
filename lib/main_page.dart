@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/voting/custom_button.dart';
 import 'package:gradproj/election_district.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
+import 'package:gradproj/voting/custom_button.dart';
 import 'package:gradproj/voting/voting_lists.dart';
 
 class MainPage extends StatelessWidget {
@@ -10,7 +10,7 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -38,7 +38,7 @@ class MainPage extends StatelessWidget {
                   }));
                 }),
             const SizedBox(height: 124),
-               const CustomBackButton()
+            const CustomBackButton()
           ],
         ),
       ),

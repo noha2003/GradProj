@@ -47,31 +47,32 @@ class ElectionListsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: text,
         ),
-       
-         SizedBox(
-           height: MediaQuery.of(context).size.height * 0.6,
-           child: ListView.builder(
-             shrinkWrap: true,       
-             physics: const NeverScrollableScrollPhysics(),
-                itemCount: lists.length,
-                itemBuilder: (context, index) {
-                  return ListsPage(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (BuildContext context) {
-                            return Candidates(image :lists[index]["image"]??"" , 
-                            listName:lists[index]["name"]??"", num:  lists[index]["number"] ?? "3",);
-                          },
-                        ));
-                      },
-                      name: lists[index]["name"] ?? "",
-                      image: lists[index]["image"] ?? "assets/images/logo.png",
-                      number: lists[index]["number"] ?? "3");
-                }),
-         ),
-        const SizedBox(height: 30),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: lists.length,
+              itemBuilder: (context, index) {
+                return ListsPage(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return Candidates(
+                            image: lists[index]["image"] ?? "",
+                            listName: lists[index]["name"] ?? "",
+                            num: lists[index]["number"] ?? "3",
+                          );
+                        },
+                      ));
+                    },
+                    name: lists[index]["name"] ?? "",
+                    image: lists[index]["image"] ?? "assets/images/logo.png",
+                    number: lists[index]["number"] ?? "3");
+              }),
+        ),
         const CustomBackButton(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 5),
       ]),
     ));
   }

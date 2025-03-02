@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/voting/candidate_card.dart';
-import 'package:gradproj/home.dart';
 import 'package:gradproj/voting/image_logo.dart';
 import 'package:gradproj/voting/voting.dart';
 
@@ -15,7 +15,8 @@ class Candidates extends StatelessWidget {
       this.seat,
       this.number,
       required this.image,
-      required this.listName, required this.num});
+      required this.listName,
+      required this.num});
   final String image;
   final String listName;
   final String num;
@@ -44,7 +45,7 @@ class Candidates extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -59,41 +60,40 @@ class Candidates extends StatelessWidget {
                 color: Color(0xFF7A0000),
               ),
             ),
-            
-               SizedBox(
-                 height: MediaQuery.of(context).size.height * 0.6,
-                 child: ListView.builder(
-                  shrinkWrap: true,
-                 physics: const NeverScrollableScrollPhysics(),
-                  itemCount: candidatesInfo.length,
-                  itemBuilder: (context, index) {
-                    return Center(
-                      child: CandidateCard(
-                        onTap: () {
-                          () {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return CandidateSelectionPage(
-                                  
-                                  image: image,
-                                  number: num,
-                                );
-                              },
-                            ));
-                            // Handle navigation or action here
-                          };
-                        },
-                        name: candidatesInfo[index]["name"] ?? "",
-                        seat: candidatesInfo[index]["seat"] ?? "",
-                        number: candidatesInfo[index]["number"] ?? "0",
-                      ),
-                    );
-                  },
-                               ),
-               ),
-             const SizedBox(height: 30),
+            const SizedBox(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: candidatesInfo.length,
+                itemBuilder: (context, index) {
+                  return Center(
+                    child: CandidateCard(
+                      onTap: () {
+                        () {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (BuildContext context) {
+                              return CandidateSelectionPage(
+                                image: image,
+                                number: num,
+                              );
+                            },
+                          ));
+                          // Handle navigation or action here
+                        };
+                      },
+                      name: candidatesInfo[index]["name"] ?? "",
+                      seat: candidatesInfo[index]["seat"] ?? "",
+                      number: candidatesInfo[index]["number"] ?? "0",
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 5),
             const CustomBackButton(),
-            const SizedBox(height: 30),
+            const SizedBox(height: 5),
           ],
         ),
       ),

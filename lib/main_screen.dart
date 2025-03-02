@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gradproj/apply%20election/election1.dart';
 import 'package:gradproj/create%20list/create_list.dart';
 import 'package:gradproj/election_district.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/important_dates.dart';
 import 'package:gradproj/main_page.dart';
 import 'package:gradproj/menu%20screens/main_menu.dart';
@@ -25,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
     const MenuScreen(),
     const ProfileScreen(),
     const NotificationScreen(),
-    const Home(child: HomeScreen()),
+    const Home_without(child: HomeScreen()),
   ];
 
   void _onItemTapped(int index) {
@@ -78,15 +79,13 @@ class HomeScreen extends StatelessWidget {
                   MaterialPageRoute(
                       builder: (context) => const WithdrawalScreen()),
                 );
-              }
-        /*      else  if (menuItems[index]['label'] == 'الترشح للانتخابات') {
+              } else if (menuItems[index]['label'] == 'الترشح للانتخابات') {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const ElectionCodeScreen()),
                 );
-              }*/
-            else if (menuItems[index]['label'] == "التصويت") {
+              } else if (menuItems[index]['label'] == "التصويت") {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const MainPage()),

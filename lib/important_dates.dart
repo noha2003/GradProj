@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 
 class ImportantDates extends StatelessWidget {
   final List<Map<String, String>> electionSchedule = [
@@ -42,7 +42,7 @@ class ImportantDates extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -69,12 +69,9 @@ class ImportantDates extends StatelessWidget {
                     headingTextStyle: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                     border: const TableBorder(
-                      horizontalInside: BorderSide(
-                          width: 1,
-                          color: Colors.white), 
-                      verticalInside: BorderSide(
-                          width: 2,
-                          color: Colors.white), 
+                      horizontalInside:
+                          BorderSide(width: 1, color: Colors.white),
+                      verticalInside: BorderSide(width: 2, color: Colors.white),
                     ),
                     columns: const [
                       DataColumn(
@@ -100,28 +97,28 @@ class ImportantDates extends StatelessWidget {
                           DataCell(SizedBox(
                               width: 65,
                               child: Center(
-                                 child: Text(item["index"]!,
-                                 style: const TextStyle(
-                                color: Colors.white))))),
+                                  child: Text(item["index"]!,
+                                      style: const TextStyle(
+                                          color: Colors.white))))),
                           DataCell(SizedBox(
                               width: 160,
                               child: Center(
                                 child: Wrap(
-                                alignment: WrapAlignment.center,
-                                children: [
-                                Text(item["event"]!,
-                                textAlign: TextAlign.center,
-                               style: const TextStyle(
-                               color: Colors.white))
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    Text(item["event"]!,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            color: Colors.white))
                                   ],
                                 ),
                               ))),
                           DataCell(SizedBox(
                               width: 85,
                               child: Center(
-                               child: Text(item["date"]!,
-                               style: const TextStyle(
-                                color: Colors.white))))),
+                                  child: Text(item["date"]!,
+                                      style: const TextStyle(
+                                          color: Colors.white))))),
                         ],
                       );
                     }).toList(),

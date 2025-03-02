@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/main_screen.dart';
 
 class SuccessWithdraw extends StatelessWidget {
   const SuccessWithdraw({super.key});
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
         child: Column(
@@ -18,7 +18,7 @@ class SuccessWithdraw extends StatelessWidget {
               color: Colors.grey[600],
             ),
             const SizedBox(height: 30),
-           const  Text(
+            const Text(
               "تم انسحابك من  الانتخابات لهذه الدورة بنجاح. ",
               textAlign: TextAlign.center,
               style: TextStyle(

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:gradproj/create%20list/create2.dart';
 import 'package:gradproj/home.dart';
@@ -24,6 +25,7 @@ class FormScreen extends StatefulWidget {
 class _FormScreenState extends State<FormScreen> {
   List<Widget> memberFields = [];
   List<GlobalKey<FormFieldState>> keys = [];
+  Map<String, PlatformFile?> uploadedFiles = {};
 
   @override
   void initState() {
@@ -65,21 +67,22 @@ class _FormScreenState extends State<FormScreen> {
         Row(
           key: key,
           children: [
-            const Expanded(
-              child: CustomLabeledTextField(label: 'الرقم الوطني'),
-          
+            Expanded(
+              child: _buildTextField('الرقم الوطني', TextInputType.number),
             ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: CustomLabeledTextField(label: 'الاسم بالهوية الشخصية'),
+            const SizedBox(width: 4),
+            Expanded(
+              child:
+                  _buildTextField('الاسم بالهوية الشخصية', TextInputType.text),
             ),
             const SizedBox(
               width: 8,
               height: 7,
             ),
             IconButton(
+              padding: EdgeInsets.all(4),
               icon: const Icon(Icons.remove_circle,
-                  size: 18, color: Color.fromRGBO(122, 0, 0, 1)),
+                  size: 15, color: Color.fromRGBO(122, 0, 0, 1)),
               onPressed: () => removeMemberField(key),
             ),
           ],
@@ -108,68 +111,34 @@ class _FormScreenState extends State<FormScreen> {
           children: [
             const SectionTitle(title: 'بيانات القائمة'),
             const SizedBox(height: 8),
-            const CustomLabeledTextField(label: 'المحافظة'),
-            const CustomLabeledTextField(label: 'الدائرة الانتخابية للقائمة'),
-            const CustomLabeledTextField(label: 'اسم القائمة الانتخابية'),
-            const CustomLabeledTextField(label: 'عدد المترشحين'),
-            const CustomLabeledTextField(label: 'عنوان مقر القائمة'),
+            _buildTextField('المحافظة', TextInputType.text),
+            _buildTextField('الدائرة الانتخابية للقائمة', TextInputType.text),
+            _buildTextField('اسم القائمة الانتخابية', TextInputType.text),
+            _buildTextField('عدد المترشحين', TextInputType.number),
+            _buildTextField('عنوان مقر القائمة', TextInputType.text),
             const SizedBox(height: 16),
             const SectionTitle(title: 'بيانات مفوض القائمة وعنوانه'),
-            const SizedBox(height: 8),
-            const CustomLabeledTextField(
-                label: 'الرقم الوطني', autofillHints: ['fffffffffffff']),
-            const CustomLabeledTextField(
-                label: 'الاسم الأول', autofillHints: ['fffffffffffff']),
-            const CustomLabeledTextField(
-                label: 'اسم الأب', autofillHints: ['fffffffffffff']),
-            const CustomLabeledTextField(
-                label: 'اسم العائلة', autofillHints: ['fffffffffffff']),
             const SizedBox(height: 16),
-            const Text(
-              'صورة عن الهوية الشخصية',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            const SizedBox(height: 8),
-            const DottedBorderContainer(),
-            const CustomLabeledTextField(
-                label: 'رقم الهاتف', autofillHints: ['fffffffffffff']),
-            const CustomLabeledTextField(
-                label: 'البريد الالكتروني', autofillHints: ['fffffffffffff']),
-            const Text(
-              'التوقيع',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            const SizedBox(height: 8),
-            const DottedBorderContainer(),
+            _buildTextField('الرقم الوطني', TextInputType.number),
+            _buildTextField('الاسم الاول', TextInputType.text),
+            _buildTextField('اسم الاب', TextInputType.text),
+            _buildTextField('اسم العائلة', TextInputType.text),
+            _buildFileUploadField('صورة عن الهوية الشخصية'),
+            _buildTextField('الرقم الوطني', TextInputType.number),
+            _buildTextField('البريد الالكتروني', TextInputType.text),
+            _buildFileUploadField('التوقيع'),
             const SizedBox(height: 16),
             const SectionTitle(title: 'الوثائق المطلوبة'),
             const SizedBox(height: 16),
-            const Text(
-              'صورة عن رمز القائمة المحلية',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            const SizedBox(height: 8),
-            const DottedBorderContainer(),
-           const  SizedBox(height: 8),
-           const  Text(
-              'ايصال مالي يثبص بأن القائمة المحلية قد دفعت للخزينة(500) دينار تأميناً لإللتزام باألحكام المتعلقة بالدعاية االنتخابية',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-              textAlign: TextAlign.right,
-            ),
-           const  SizedBox(height: 8),
-           const  DottedBorderContainer(),
-            const SizedBox(height: 8),
-            const Text(
-              'تعهد خطي بأن القائمة المحلية ستقوم بتقديم (افصاح مالي عن موارد تمويل الحملة االنتخابية وأوجه انفاقها وفتح حساب بنكي لغايات بيان أوجه الصرف على الحملة االنتخابية وتعين محاسب قانوني) خلال (سبعة أيام) من تبليغ قرار الهيئة القبول لطلب الترشح.',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-              textAlign: TextAlign.right,
-            ),
-           const  SizedBox(height: 8),
-            const DottedBorderContainer(),
+            _buildFileUploadField('صورة عن رمز القائمة المحلية'),
+            _buildFileUploadField(
+                'ايصال مالي يثبص بأن القائمة المحلية قد دفعت للخزينة(500) دينار تأميناً لإللتزام باألحكام المتعلقة بالدعاية االنتخابية'),
+            _buildFileUploadField(
+                'تعهد خطي بأن القائمة المحلية ستقوم بتقديم (افصاح مالي عن موارد تمويل الحملة االنتخابية وأوجه انفاقها وفتح حساب بنكي لغايات بيان أوجه الصرف على الحملة االنتخابية وتعين محاسب قانوني) خلال (سبعة أيام) من تبليغ قرار الهيئة القبول لطلب الترشح.'),
             const SizedBox(height: 16),
             const SectionTitle(
                 title: 'اعضاء القائمة حسب تسلسل الاولوية المتفق عليها'),
-           const  SizedBox(height: 16),
+            const SizedBox(height: 16),
             Column(
               children: memberFields,
             ),
@@ -185,8 +154,8 @@ class _FormScreenState extends State<FormScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,
                       foregroundColor: Colors.white,
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 8.0),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -218,6 +187,82 @@ class _FormScreenState extends State<FormScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextInputType inputType) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.end, // محاذاة التسمية للنهاية (اليمين)
+        children: [
+          TextField(
+            textAlign: TextAlign.right, // محاذاة النص داخل الـ TextField
+            keyboardType: inputType,
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+              border: OutlineInputBorder(
+                borderSide: const BorderSide(color: Color(0xFF7A0000)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Color(0xFF7A0000)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(color: Color(0xFF7A0000)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileUploadField(String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.right,
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () async {
+              FilePickerResult? result = await FilePicker.platform.pickFiles();
+              if (result != null) {
+                setState(() {
+                  uploadedFiles[label] = result.files.first;
+                });
+              }
+            },
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFF7A0000)),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  uploadedFiles[label]?.name ?? 'اضغط لرفع الملف',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -265,7 +310,7 @@ class CustomLabeledTextField extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, color: Colors.black),
+            style: const TextStyle(fontSize: 12, color: Colors.black),
           ),
           const SizedBox(height: 6),
           TextField(
@@ -291,34 +336,6 @@ class CustomLabeledTextField extends StatelessWidget {
             textAlign: TextAlign.right,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class DottedBorderContainer extends StatelessWidget {
-  const DottedBorderContainer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 120,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFD9D9D9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color.fromRGBO(122, 0, 0, 1),
-          style: BorderStyle.solid,
-          width: 1.5,
-        ),
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.upload_file,
-          color: Colors.grey,
-          size: 40,
-        ),
       ),
     );
   }

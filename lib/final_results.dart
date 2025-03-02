@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_to_home_button.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 
 class ElectionResultsScreen extends StatelessWidget {
   final List<Map<String, String>> electionResults = [
@@ -44,14 +44,14 @@ class ElectionResultsScreen extends StatelessWidget {
   ElectionResultsScreen({super.key, required this.districtName});
   final String districtName;
   @override
-  Widget build(BuildContext context)
-   { var text = Text(
+  Widget build(BuildContext context) {
+    var text = Text(
       districtName,
       style: const TextStyle(
           fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF7A0000)),
       textAlign: TextAlign.center,
     );
-    return Home(
+    return Home_without(
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Padding(
@@ -66,16 +66,16 @@ class ElectionResultsScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF7A0000)),
                 textAlign: TextAlign.center,
-              ),const SizedBox(height: 13),
-               Padding(
-               padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              ),
+              const SizedBox(height: 13),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: text,
-                ),
+              ),
               const SizedBox(height: 26),
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                
                   child: SingleChildScrollView(
                     child: FittedBox(
                       child: DataTable(

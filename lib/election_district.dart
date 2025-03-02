@@ -38,68 +38,67 @@ class ElectionDistrictsScreen extends StatelessWidget {
         child: Column(children: [
           Padding(
             padding: const EdgeInsets.only(top: 33),
-            child: forView? const Text(
-              "اختر الدائرة الانتخابية",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF7A0000)),
-              textAlign: TextAlign.center,
-            ):const Text(
-              "النتائج النهائية للانتخابات النيابية\n 2024",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF7A0000)),
-              textAlign: TextAlign.center,
-            ),
+            child: forView
+                ? const Text(
+                    "اختر الدائرة الانتخابية",
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF7A0000)),
+                    textAlign: TextAlign.center,
+                  )
+                : const Text(
+                    "النتائج النهائية للانتخابات النيابية\n 2024",
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF7A0000)),
+                    textAlign: TextAlign.center,
+                  ),
           ),
-             ListView.builder(
-                 shrinkWrap: true,       
-                  physics: const NeverScrollableScrollPhysics(),
-                itemCount: districtsData.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 6.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        maximumSize: const Size(345, 98),
-                        padding: const EdgeInsets.symmetric(vertical: 30.0),
-                        backgroundColor: const Color.fromRGBO(217, 217, 217, 1),
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Color(0xFF7A0000), width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (BuildContext context) {
-                              return forView
-                                 ? ElectionListsScreen(
-                                   districtName: districtsData[index]["name"])
-                                :ElectionResultsScreen(
-                                   districtName: districtsData[index]["name"]) ;
-                            },
-                          ),
-                        );
-                      },
-                      child: Text(districtsData[index]["name"],
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 20)),
-                              
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: districtsData.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 6.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    maximumSize: const Size(345, 98),
+                    padding: const EdgeInsets.symmetric(vertical: 30.0),
+                    backgroundColor: const Color.fromRGBO(217, 217, 217, 1),
+                    foregroundColor: Colors.black,
+                    side: const BorderSide(color: Color(0xFF7A0000), width: 2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                  );
-                },
-                           ),
-             
-          
-           const SizedBox(height: 20),
-         const CustomBackButton(),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return forView
+                              ? ElectionListsScreen(
+                                  districtName: districtsData[index]["name"])
+                              : ElectionResultsScreen(
+                                  districtName: districtsData[index]["name"]);
+                        },
+                      ),
+                    );
+                  },
+                  child: Text(districtsData[index]["name"],
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          const CustomBackButton(),
           const SizedBox(height: 30),
         ]),
       ),

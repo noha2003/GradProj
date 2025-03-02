@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -12,7 +12,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Home(
+      body: Home_without(
         child: Icon(
           Icons.notifications,
           size: 300,

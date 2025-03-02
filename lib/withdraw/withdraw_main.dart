@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/withdraw/withdraw2.dart';
 
 class WithdrawalScreen extends StatelessWidget {
@@ -7,7 +7,7 @@ class WithdrawalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: Padding(
         padding:
             const EdgeInsets.only(left: 16.0, right: 16, bottom: 20, top: 20),
@@ -15,7 +15,7 @@ class WithdrawalScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-             const Text(
+              const Text(
                 'الرقم الوطني ',
                 style: TextStyle(
                   color: Colors.black,
@@ -86,7 +86,7 @@ class WithdrawalScreen extends StatelessWidget {
                 readOnly: true, // Make it non-editable
               ),
               const SizedBox(height: 16.0),
-             const  Text(
+              const Text(
                 'رقم القائمة الانتخابية',
                 style: TextStyle(
                   color: Colors.black,
@@ -120,7 +120,7 @@ class WithdrawalScreen extends StatelessWidget {
                 controller: TextEditingController(text: ''),
               ),
               const SizedBox(height: 16),
-             const  Text(
+              const Text(
                 'سبب الانسحاب',
                 style: TextStyle(
                   color: Colors.black,
@@ -155,7 +155,7 @@ class WithdrawalScreen extends StatelessWidget {
               const SizedBox(height: 16.0),
 
               // ملاحظة
-             const Text(
+              const Text(
                 'عند الانسحاب، لن تتمكن من العودة للترشح في هذه الدورة',
                 style: TextStyle(
                   color: Color.fromRGBO(122, 0, 0, 1),
@@ -181,13 +181,13 @@ class WithdrawalScreen extends StatelessWidget {
                       foregroundColor: Colors.black, // لون النص
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
-                        side:const  BorderSide(
+                        side: const BorderSide(
                             color: Color.fromRGBO(122, 0, 0, 1), width: 2.0),
                       ),
                     ),
-                    child:const  Padding(
-                      padding:  EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
+                    child: const Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Text(
                         'رجوع',
                         style: TextStyle(
@@ -211,12 +211,11 @@ class WithdrawalScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Padding(
-                      padding:  EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Text(
                         'تأكيد',
-                        style: TextStyle(
-                            color: Colors.white, fontSize: 20),
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ),
                   ),

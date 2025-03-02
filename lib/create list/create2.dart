@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/main_screen.dart';
 
 class SuccessCreate extends StatelessWidget {
   const SuccessCreate({super.key});
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
         child: Column(
@@ -18,17 +18,17 @@ class SuccessCreate extends StatelessWidget {
               color: Colors.grey[600],
             ),
             const SizedBox(height: 30),
-           const Text(
+            const Text(
               "تم إرسال طلب ترشح القائمة الانتخابية بنجاح.  ",
               textAlign: TextAlign.center,
-              style:TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color.fromRGBO(122, 0, 0, 1),
               ),
             ),
             const SizedBox(height: 30),
-           const Text(
+            const Text(
               "سيتم مراجعة طلبك, و سيتم ابلاغك في حالة القبول  أو الرفض.  ",
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -53,9 +53,9 @@ class SuccessCreate extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child:const Text(
+              child: const Text(
                 "الرجوع إلى الصفحة الرئيسية",
-                style:TextStyle(fontSize: 16, color: Colors.white),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,42 +9,38 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
-
   @override
   Widget build(BuildContext context) {
-    return 
-       const Home(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  UserInfo(name: "محمد احمد عبد الهادي"),
-                ],
-              ),
-              ExpandableCard(title: "الرقم الوطني", content: "123456789"),
-              ExpandableCard(title: "تاريخ الميلاد", content: "01-01-2002"),
-              ExpandableCard(title: "الجنس", content: "ذكر"),
-              ExpandableCard(
-                  title: "الدائرة الانتخابية", content: "الدائرة الأولى"),
-              ExpandableCard(
-                  title: "حالة المستخدم (مرشح / غير مرشح)", content: "مرشح"),
-              ExpandableCard(title: "رقم الهاتف", content: "123456789"),
-              ExpandableCard(
-                  title: "البريد الالكتروني", content: "example@example.com"),
-              ExpandableCard(
-                title: "كلمة المرور",
-                content: "******",
-              ),
-            ],
-          ),
+    return const Home_without(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                UserInfo(name: "محمد احمد عبد الهادي"),
+              ],
+            ),
+            ExpandableCard(title: "الرقم الوطني", content: "123456789"),
+            ExpandableCard(title: "تاريخ الميلاد", content: "01-01-2002"),
+            ExpandableCard(title: "الجنس", content: "ذكر"),
+            ExpandableCard(
+                title: "الدائرة الانتخابية", content: "الدائرة الأولى"),
+            ExpandableCard(
+                title: "حالة المستخدم (مرشح / غير مرشح)", content: "مرشح"),
+            ExpandableCard(title: "رقم الهاتف", content: "123456789"),
+            ExpandableCard(
+                title: "البريد الالكتروني", content: "example@example.com"),
+            ExpandableCard(
+              title: "كلمة المرور",
+              content: "******",
+            ),
+          ],
         ),
-      );
-    
+      ),
+    );
   }
 }
 
@@ -61,10 +57,10 @@ class UserInfo extends StatelessWidget {
           children: [
             Text(
               name,
-              style:const TextStyle(
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color:  Color.fromRGBO(122, 0, 0, 1)),
+                  color: Color.fromRGBO(122, 0, 0, 1)),
             ),
             const SizedBox(width: 10),
             const CircleAvatar(
@@ -131,7 +127,7 @@ class _ExpandableCardState extends State<ExpandableCard> {
               title: Text(
                 widget.title,
                 textAlign: TextAlign.right,
-                style:const TextStyle(
+                style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black),

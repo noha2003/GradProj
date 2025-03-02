@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-
-import 'package:gradproj/home.dart';
+import 'package:gradproj/home2.dart';
 import 'package:gradproj/voting/lists_page.dart';
 import 'package:gradproj/voting/voting.dart';
 
@@ -23,7 +22,7 @@ class VotingLists extends StatelessWidget {
   ];
   @override
   Widget build(BuildContext context) {
-    return Home(
+    return Home_without(
         child: SingleChildScrollView(
       child: Column(children: [
         const Padding(
@@ -62,7 +61,7 @@ class VotingLists extends StatelessWidget {
                     });
               }),
         ),
-         const SizedBox(height: 10),
+        const SizedBox(height: 10),
         const CustomBackButton(),
         const SizedBox(height: 20),
       ]),
