@@ -23,4 +23,4 @@ class MyApp extends StatelessWidget {
       home: const SplashScreen(),
     );
   }
-}//dddddd
+} //dddddd

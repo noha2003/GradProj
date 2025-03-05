@@ -53,7 +53,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SuccessScreen()),
+                            builder: (context) => const SuccessScreen()),
                       );
                     },
                     child: const Padding(

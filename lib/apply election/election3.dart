@@ -35,7 +35,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF7A0000),
+                    color: Color(0xFF7A0000),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -44,7 +44,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: const Color(0xFF7A0000),
+                    color: Color(0xFF7A0000),
                   ),
                 ),
                 const SizedBox(height: 100),

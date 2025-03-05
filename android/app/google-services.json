@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1062009312897",
+    "project_id": "election-ee8fc",
+    "storage_bucket": "election-ee8fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1062009312897:android:f16ce14b124a3a78bfdf80",
+        "android_client_info": {
+          "package_name": "com.example.gradproj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKChjKS-NnIkr_LVNrCwZVb8loTxb8dxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

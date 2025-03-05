@@ -112,63 +112,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                 ],
               );
             }),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: candidates.length,
-              itemBuilder: (context, index) {
-                String candidateNumber = candidates[index]["number"] ?? "0";
-                bool isSelected = selectedCandidates.contains(candidateNumber);
-                return Row(
-                  children: [
-                    const Spacer(
-                      flex: 1,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10, top: 10),
-                      child: isSelected
-                          ? const Icon(Icons.check_box,
-                              color: Color(0xFF7A0000), size: 30)
-                          : const Icon(Icons.check_box_outline_blank,
-                              color: Color(0xFF7A0000), size: 30),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            selectedCandidates.remove(candidateNumber);
-                          } else {
-                            selectedCandidates.add(candidateNumber);
-                          }
-                        });
-                      },
-                      child: CandidateCard(
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              selectedCandidates.remove(candidateNumber);
-                            } else {
-                              selectedCandidates.add(candidateNumber);
-                            }
-                          });
-                        },
-                        name: candidates[index]["name"] ?? "",
-                        seat: candidates[index]["seat"] ?? "",
-                        number: candidates[index]["number"] ?? "0",
-                      ),
-                    ),
-                    const Spacer(
-                      flex: 1,
-                    ),
-                  ],
-                );
-              }),
-        ),
         Center(
           child: Row(children: [
             const Spacer(flex: 1),

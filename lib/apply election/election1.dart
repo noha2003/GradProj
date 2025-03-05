@@ -4,7 +4,7 @@ import '../header.dart';
 import 'election2.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: ElectionCodeScreen(),
   ));
@@ -114,7 +114,7 @@ class ElectionCodeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => RegistrationForm()),
+                          builder: (context) => const RegistrationForm()),
                     );
                   },
                   child: const Text(

@@ -41,16 +41,18 @@ class _FormScreenState extends State<FormScreen> {
         memberFields.add(
           Row(
             key: key,
-            children: const [
+            children: [
               Expanded(
-                child: CustomLabeledTextField(label: 'الرقم الوطني'),
+                child: _buildTextField(
+                    'الرقم الوطني', TextInputType.number, false),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 8,
                 height: 5,
               ),
               Expanded(
-                child: CustomLabeledTextField(label: 'الاسم بالهوية الشخصية'),
+                child: _buildTextField(
+                    'الاسم بالهوية الشخصية', TextInputType.text, true),
               ),
             ],
           ),
@@ -68,21 +70,22 @@ class _FormScreenState extends State<FormScreen> {
           key: key,
           children: [
             Expanded(
-              child: _buildTextField('الرقم الوطني', TextInputType.number),
+              child:
+                  _buildTextField('الرقم الوطني', TextInputType.number, false),
             ),
             const SizedBox(width: 4),
             Expanded(
-              child:
-                  _buildTextField('الاسم بالهوية الشخصية', TextInputType.text),
+              child: _buildTextField(
+                  'الاسم بالهوية الشخصية', TextInputType.text, true),
             ),
             const SizedBox(
               width: 8,
               height: 7,
             ),
             IconButton(
-              padding: EdgeInsets.all(4),
+              padding: const EdgeInsets.all(4),
               icon: const Icon(Icons.remove_circle,
-                  size: 15, color: Color.fromRGBO(122, 0, 0, 1)),
+                  size: 18, color: Color.fromRGBO(122, 0, 0, 1)),
               onPressed: () => removeMemberField(key),
             ),
           ],
@@ -111,21 +114,23 @@ class _FormScreenState extends State<FormScreen> {
           children: [
             const SectionTitle(title: 'بيانات القائمة'),
             const SizedBox(height: 8),
-            _buildTextField('المحافظة', TextInputType.text),
-            _buildTextField('الدائرة الانتخابية للقائمة', TextInputType.text),
-            _buildTextField('اسم القائمة الانتخابية', TextInputType.text),
-            _buildTextField('عدد المترشحين', TextInputType.number),
-            _buildTextField('عنوان مقر القائمة', TextInputType.text),
+            _buildTextField('المحافظة', TextInputType.text, true),
+            _buildTextField(
+                'الدائرة الانتخابية للقائمة', TextInputType.text, false),
+            _buildTextField(
+                'اسم القائمة الانتخابية', TextInputType.text, false),
+            _buildTextField('عدد المترشحين', TextInputType.number, false),
+            _buildTextField('عنوان مقر القائمة', TextInputType.text, false),
             const SizedBox(height: 16),
             const SectionTitle(title: 'بيانات مفوض القائمة وعنوانه'),
             const SizedBox(height: 16),
-            _buildTextField('الرقم الوطني', TextInputType.number),
-            _buildTextField('الاسم الاول', TextInputType.text),
-            _buildTextField('اسم الاب', TextInputType.text),
-            _buildTextField('اسم العائلة', TextInputType.text),
+            _buildTextField('الرقم الوطني', TextInputType.number, true),
+            _buildTextField('الاسم الاول', TextInputType.text, true),
+            _buildTextField('اسم الاب', TextInputType.text, true),
+            _buildTextField('اسم العائلة', TextInputType.text, true),
             _buildFileUploadField('صورة عن الهوية الشخصية'),
-            _buildTextField('الرقم الوطني', TextInputType.number),
-            _buildTextField('البريد الالكتروني', TextInputType.text),
+            _buildTextField('رقم الهاتف', TextInputType.number, true),
+            _buildTextField('البريد الالكتروني', TextInputType.text, true),
             _buildFileUploadField('التوقيع'),
             const SizedBox(height: 16),
             const SectionTitle(title: 'الوثائق المطلوبة'),
@@ -191,7 +196,8 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextInputType inputType) {
+  Widget _buildTextField(
+      String label, TextInputType inputType, bool isReadOnly) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Column(
@@ -201,6 +207,7 @@ class _FormScreenState extends State<FormScreen> {
           TextField(
             textAlign: TextAlign.right, // محاذاة النص داخل الـ TextField
             keyboardType: inputType,
+            readOnly: isReadOnly, // إذا كان الحقل للعرض فقط، لا يمكن تعديله
             decoration: InputDecoration(
               labelText: label,
               labelStyle: const TextStyle(
@@ -295,48 +302,48 @@ class SectionTitle extends StatelessWidget {
   }
 }
 
-class CustomLabeledTextField extends StatelessWidget {
-  final String label;
-  final List<String>? autofillHints;
-  const CustomLabeledTextField(
-      {super.key, required this.label, this.autofillHints});
+// class CustomLabeledTextField extends StatelessWidget {
+//   final String label;
+//   final List<String>? autofillHints;
+//   const CustomLabeledTextField(
+//       {super.key, required this.label, this.autofillHints});
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12, color: Colors.black),
-          ),
-          const SizedBox(height: 6),
-          TextField(
-            autofillHints: autofillHints,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFD9D9D9),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
-                  color: Color.fromRGBO(122, 0, 0, 1),
-                  width: 1,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
-                  color: Color.fromRGBO(122, 0, 0, 1),
-                  width: 1.5,
-                ),
-              ),
-            ),
-            textAlign: TextAlign.right,
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 8.0),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.end,
+//         children: [
+//           Text(
+//             label,
+//             style: const TextStyle(fontSize: 12, color: Colors.black),
+//           ),
+//           const SizedBox(height: 6),
+//           TextField(
+//             autofillHints: autofillHints,
+//             decoration: InputDecoration(
+//               filled: true,
+//               fillColor: const Color(0xFFD9D9D9),
+//               border: OutlineInputBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//                 borderSide: const BorderSide(
+//                   color: Color.fromRGBO(122, 0, 0, 1),
+//                   width: 1,
+//                 ),
+//               ),
+//               enabledBorder: OutlineInputBorder(
+//                 borderRadius: BorderRadius.circular(16),
+//                 borderSide: const BorderSide(
+//                   color: Color.fromRGBO(122, 0, 0, 1),
+//                   width: 1.5,
+//                 ),
+//               ),
+//             ),
+//             textAlign: TextAlign.right,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
