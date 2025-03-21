@@ -1,55 +1,113 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradproj/home2.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
   @override
-  // ignore: library_private_types_in_public_api
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+
+        if (userDoc.exists) {
+          setState(() {
+            userData = userDoc.data() as Map<String, dynamic>;
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print("Error fetching user data: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Home_without(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                UserInfo(name: "محمد احمد عبد الهادي"),
-              ],
+    return Home_without(
+      child: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      UserInfo(
+                        name: userData?['name'] ?? 'غير معروف',
+                        imagePath: userData?['image'],
+                      ),
+                    ],
+                  ),
+                  ExpandableCard(
+                      title: "الرقم الوطني",
+                      content:
+                          userData?['nationalId']?.toString() ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "تاريخ الميلاد",
+                      content: userData?['birthDate'] ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "الجنس",
+                      content: userData?['gender'] ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "الدائرة الانتخابية",
+                      content: userData?['electoralDistrict'] ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "حالة المستخدم (مرشح / غير مرشح)",
+                      content: userData?['candidateStatus'] ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "رقم الهاتف",
+                      content: userData?['phoneNumber'] ?? 'غير متوفر'),
+                  ExpandableCard(
+                      title: "البريد الالكتروني",
+                      content: userData?['email'] ?? 'غير متوفر'),
+                  ExpandableCard(title: "كلمة المرور", content: "******"),
+                ],
+              ),
             ),
-            ExpandableCard(title: "الرقم الوطني", content: "123456789"),
-            ExpandableCard(title: "تاريخ الميلاد", content: "01-01-2002"),
-            ExpandableCard(title: "الجنس", content: "ذكر"),
-            ExpandableCard(
-                title: "الدائرة الانتخابية", content: "الدائرة الأولى"),
-            ExpandableCard(
-                title: "حالة المستخدم (مرشح / غير مرشح)", content: "مرشح"),
-            ExpandableCard(title: "رقم الهاتف", content: "123456789"),
-            ExpandableCard(
-                title: "البريد الالكتروني", content: "example@example.com"),
-            ExpandableCard(
-              title: "كلمة المرور",
-              content: "******",
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
 
 class UserInfo extends StatelessWidget {
   final String name;
-  const UserInfo({super.key, required this.name});
+  final String? imagePath; // المسار المخزن في Firestore
+
+  const UserInfo({super.key, required this.name, this.imagePath});
 
   @override
   Widget build(BuildContext context) {
+    bool isAssetImage = imagePath != null && imagePath!.startsWith('assets/');
+
     return Column(
       children: [
         Row(
@@ -63,11 +121,17 @@ class UserInfo extends StatelessWidget {
                   color: Color.fromRGBO(122, 0, 0, 1)),
             ),
             const SizedBox(width: 10),
-            const CircleAvatar(
+            CircleAvatar(
               radius: 35,
               backgroundColor: Color.fromRGBO(180, 179, 179, 1),
-              child: Icon(Icons.person,
-                  size: 40, color: Color.fromARGB(255, 97, 97, 97)),
+              backgroundImage: isAssetImage
+                  ? AssetImage(imagePath!) // تحميل الصورة من `assets/`
+                  : const AssetImage('assets/default-avatar.png')
+                      as ImageProvider,
+              child: !isAssetImage
+                  ? const Icon(Icons.person,
+                      size: 40, color: Color.fromARGB(255, 97, 97, 97))
+                  : null, // عرض أيقونة افتراضية إذا لم توجد صورة
             ),
           ],
         ),

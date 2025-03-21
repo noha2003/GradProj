@@ -19,7 +19,7 @@ class SuccessCreate extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             const Text(
-              "تم إرسال طلب ترشح القائمة الانتخابية بنجاح.  ",
+              "تم إرسال طلب ترشح القائمة الانتخابية بنجاح  ",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
@@ -29,7 +29,7 @@ class SuccessCreate extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             const Text(
-              "سيتم مراجعة طلبك, و سيتم ابلاغك في حالة القبول  أو الرفض.  ",
+              "سيتم مراجعة طلبك, و سيتم ابلاغك في حالة القبول  أو الرفض ",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,

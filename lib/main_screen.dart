@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/apply%20election/election1.dart';
 import 'package:gradproj/create%20list/create_list.dart';
-import 'package:gradproj/election_district.dart';
+import 'package:gradproj/finalResult/finalmainpage.dart';
 import 'package:gradproj/home2.dart';
 import 'package:gradproj/important_dates.dart';
 import 'package:gradproj/main_page.dart';
@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(top: 2, bottom: 20, left: 20, right: 20),
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -100,9 +100,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ElectionDistrictsScreen(
-                            forView: false,
-                          )),
+                      builder: (context) => const FinalMainPage()),
                 );
               } else if (menuItems[index]['label'] == 'إنشاء قائمة انتخابية') {
                 Navigator.push(

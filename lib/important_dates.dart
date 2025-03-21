@@ -126,7 +126,13 @@ class ImportantDates extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(
+              height: 15,
+            ),
             const CustomBackButton(),
+            const SizedBox(
+              height: 15,
+            )
           ],
         ),
       ),

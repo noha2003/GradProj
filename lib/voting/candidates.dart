@@ -48,6 +48,7 @@ class Candidates extends StatelessWidget {
     return Home_without(
       child: SingleChildScrollView(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             const SizedBox(height: 11),
             ImageLogo(imagePath: image),
@@ -60,10 +61,11 @@ class Candidates extends StatelessWidget {
                 color: Color(0xFF7A0000),
               ),
             ),
-            const SizedBox(height: 1),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ListView.builder(
+                padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: candidatesInfo.length,
@@ -76,7 +78,7 @@ class Candidates extends StatelessWidget {
                             builder: (BuildContext context) {
                               return CandidateSelectionPage(
                                 image: image,
-                                number: num,
+                                name: '',
                               );
                             },
                           ));

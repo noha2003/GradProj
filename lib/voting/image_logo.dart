@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class ImageLogo extends StatelessWidget {
   const ImageLogo({super.key, required this.imagePath});
   final String imagePath;
@@ -21,13 +20,8 @@ class ImageLogo extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-           image: DecorationImage(
-          image:  AssetImage(
-            imagePath),
-             scale: 2.5
+          image: DecorationImage(image: AssetImage(imagePath), scale: 2.5),
         ),
-        ),
-       
       ),
     );
   }

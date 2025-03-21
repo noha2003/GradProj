@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
-
-
 class CandidateCard extends StatelessWidget {
   final String name;
   final String seat;
   final String number;
   const CandidateCard(
-      {super.key, required this.onTap, required this.name,  required this.seat, required this.number});
-  
+      {super.key,
+      required this.onTap,
+      required this.name,
+      required this.seat,
+      required this.number});
+
   final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
@@ -30,18 +32,18 @@ class CandidateCard extends StatelessWidget {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(right:5 ),
+                padding: const EdgeInsets.only(right: 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                       // ignore: unnecessary_null_comparison
-                     "اسم المرشح: $name",
+                      // ignore: unnecessary_null_comparison
+                      "اسم المرشح: $name",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
-                        color:Color(0xFF7A0000) ,
+                        color: Color(0xFF7A0000),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -84,4 +86,3 @@ class CandidateCard extends StatelessWidget {
     );
   }
 }
-

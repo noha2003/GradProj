@@ -103,7 +103,7 @@ class ElectionResultsScreen extends StatelessWidget {
                               label: SizedBox(
                                   width: 85,
                                   child: Center(
-                                      child: Text('عدد أصوات القائمة')))),
+                                      child: Text('عدد أصوات\n القائمة')))),
                           DataColumn(
                               label: SizedBox(
                                   width: 155,

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/final_results.dart';
+import 'package:gradproj/finalResult/final_results.dart';
+import 'package:gradproj/finalResult/initial_result.dart';
 import 'package:gradproj/home.dart';
 import 'package:gradproj/voting/view_lists.dart';
 
+enum ElectionScreenType {
+  viewLists, // عرض القوائم الانتخابية
+  initialResults, // النتائج الأولية
+  finalResults // النتائج النهائية
+}
+
 class ElectionDistrictsScreen extends StatelessWidget {
-  ElectionDistrictsScreen({super.key, required this.forView});
-  final bool forView;
+  ElectionDistrictsScreen({super.key, required this.screenType});
+
+  final ElectionScreenType screenType;
 
   final List<Map<String, dynamic>> districtsData = [
     {"name": "العاصمة - الدائرة الانتخابية الاولى", "id": 1},
@@ -31,6 +39,7 @@ class ElectionDistrictsScreen extends StatelessWidget {
     {"name": "معان", "id": 20},
     {"name": "عجلون", "id": 21}
   ];
+
   @override
   Widget build(BuildContext context) {
     return Home(
@@ -38,25 +47,18 @@ class ElectionDistrictsScreen extends StatelessWidget {
         child: Column(children: [
           Padding(
             padding: const EdgeInsets.only(top: 33),
-            child: forView
-                ? const Text(
-                    "اختر الدائرة الانتخابية",
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7A0000)),
-                    textAlign: TextAlign.center,
-                  )
-                : const Text(
-                    "النتائج النهائية للانتخابات النيابية\n 2024",
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7A0000)),
-                    textAlign: TextAlign.center,
-                  ),
+            child: Text(
+              _getTitle(), // استدعاء الدالة التي تُرجع العنوان المناسب
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF7A0000)),
+              textAlign: TextAlign.center,
+            ),
           ),
+          const SizedBox(height: 10),
           ListView.builder(
+            padding: EdgeInsets.zero,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: districtsData.length,
@@ -76,18 +78,8 @@ class ElectionDistrictsScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) {
-                          return forView
-                              ? ElectionListsScreen(
-                                  districtName: districtsData[index]["name"])
-                              : ElectionResultsScreen(
-                                  districtName: districtsData[index]["name"]);
-                        },
-                      ),
-                    );
+                    _navigateToNextScreen(
+                        context, districtsData[index]["name"]);
                   },
                   child: Text(districtsData[index]["name"],
                       textAlign: TextAlign.center,
@@ -102,6 +94,42 @@ class ElectionDistrictsScreen extends StatelessWidget {
           const SizedBox(height: 30),
         ]),
       ),
+    );
+  }
+
+  // 🔹 دالة تُرجع العنوان المناسب لكل حالة
+  String _getTitle() {
+    switch (screenType) {
+      case ElectionScreenType.viewLists:
+        return "اختر الدائرة الانتخابية";
+      case ElectionScreenType.initialResults:
+        return "النتائج الأولية للانتخابات 2028";
+      case ElectionScreenType.finalResults:
+        return "النتائج النهائية للانتخابات 2024";
+      default:
+        return "";
+    }
+  }
+
+  // 🔹 دالة تحدد الصفحة التي سيتم الانتقال إليها
+  void _navigateToNextScreen(BuildContext context, String districtName) {
+    Widget nextScreen;
+    switch (screenType) {
+      case ElectionScreenType.viewLists:
+        nextScreen = ElectionListsScreen(districtName: districtName);
+        break;
+      case ElectionScreenType.initialResults:
+        nextScreen =
+            InitialResults(districtName: districtName); // شاشة النتائج الأولية
+        break;
+      case ElectionScreenType.finalResults:
+        nextScreen = ElectionResultsScreen(districtName: districtName);
+        break;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => nextScreen),
     );
   }
 }
