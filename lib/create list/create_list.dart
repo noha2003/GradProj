@@ -116,6 +116,7 @@ class _FormScreenState extends State<FormScreen> {
         // معلومات إضافية
         'userId': FirebaseAuth.instance.currentUser!.uid,
         'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pinned',
       };
 
       // إنشاء مستند جديد في collection "lists requests"
@@ -209,8 +210,7 @@ class _FormScreenState extends State<FormScreen> {
           ),
           const SizedBox(height: 8),
           Container(
-            height:
-                57.0, // زيادة ارتفاع البوكس إلى 60 (يمكنك تعديل القيمة حسب الحاجة)
+            height: 57.0,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             decoration: BoxDecoration(
               border: Border.all(color: const Color(0xFF7A0000)),
@@ -742,37 +742,6 @@ class _FormScreenState extends State<FormScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextInputType inputType, bool isReadOnly) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.end, // محاذاة التسمية للنهاية (اليمين)
-        children: [
-          TextField(
-            textAlign: TextAlign.right, // محاذاة النص داخل الـ TextField
-            keyboardType: inputType,
-            readOnly: isReadOnly, // إذا كان الحقل للعرض فقط، لا يمكن تعديله
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Color(0xFF7A0000)),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Color(0xFF7A0000)),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Color(0xFF7A0000)),
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
