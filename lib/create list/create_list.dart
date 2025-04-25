@@ -121,7 +121,7 @@ class _FormScreenState extends State<FormScreen> {
 
       // إنشاء مستند جديد في collection "lists requests"
       await FirebaseFirestore.instance
-          .collection('lists requests')
+          .collection('lists_requests')
           .add(listData);
 
       print("List request saved successfully!");
