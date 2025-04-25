@@ -12,11 +12,19 @@ class ListDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تفاصيل القائمة'),
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'تفاصيل القائمة',
+              style: TextStyle(fontSize: 20),
+            ),
+          ],
+        ),
         backgroundColor: const Color(0xFF7A0000),
         foregroundColor: Colors.white,
         centerTitle: false,
-        titleSpacing: 0,
+        titleSpacing: 10,
         leading: IconButton(
           icon: const Icon(Icons.logout),
           onPressed: () => AuthService.signOut(context),
