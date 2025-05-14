@@ -17,6 +17,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
+  // Controllers للتعديل
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +38,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (userDoc.exists) {
           setState(() {
             userData = userDoc.data() as Map<String, dynamic>;
+            _phoneController.text = userData?['phoneNumber'] ?? '';
+            _emailController.text = userData?['email'] ?? '';
+            _passwordController.text = '******'; // كلمة المرور مخفية
             isLoading = false;
           });
         } else {
@@ -47,6 +55,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> updateUserData(String field, String value) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .update({field: value});
+        setState(() {
+          userData?[field] = value;
+          if (field == 'phoneNumber') _phoneController.text = value;
+          if (field == 'email') _emailController.text = value;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم التحديث بنجاح')),
+        );
+      }
+    } catch (e) {
+      print("Error updating user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء التحديث')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -69,28 +110,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   ExpandableCard(
-                      title: "الرقم الوطني",
-                      content:
-                          userData?['nationalId']?.toString() ?? 'غير متوفر'),
+                    title: "الرقم الوطني",
+                    content: userData?['nationalId']?.toString() ?? 'غير متوفر',
+                    isEditable: false,
+                  ),
                   ExpandableCard(
-                      title: "تاريخ الميلاد",
-                      content: userData?['birthDate'] ?? 'غير متوفر'),
+                    title: "تاريخ الميلاد",
+                    content: userData?['birthDate'] ?? 'غير متوفر',
+                    isEditable: false,
+                  ),
                   ExpandableCard(
-                      title: "الجنس",
-                      content: userData?['gender'] ?? 'غير متوفر'),
+                    title: "الجنس",
+                    content: userData?['gender'] ?? 'غير متوفر',
+                    isEditable: false,
+                  ),
                   ExpandableCard(
-                      title: "الدائرة الانتخابية",
-                      content: userData?['electoralDistrict'] ?? 'غير متوفر'),
+                    title: "الدائرة الانتخابية",
+                    content: userData?['electoralDistrict'] ?? 'غير متوفر',
+                    isEditable: false,
+                  ),
                   ExpandableCard(
-                      title: "حالة المستخدم (مرشح / غير مرشح)",
-                      content: userData?['candidateStatus'] ?? 'غير متوفر'),
+                    title: "حالة المستخدم (مرشح / غير مرشح)",
+                    content: userData?['status'] ?? 'غير متوفر',
+                    isEditable: false,
+                  ),
                   ExpandableCard(
-                      title: "رقم الهاتف",
-                      content: userData?['phoneNumber'] ?? 'غير متوفر'),
+                    title: "رقم الهاتف",
+                    content: userData?['phoneNumber'] ?? 'غير متوفر',
+                    isEditable: true,
+                    controller: _phoneController,
+                    onSave: (value) => updateUserData('phoneNumber', value),
+                  ),
                   ExpandableCard(
-                      title: "البريد الالكتروني",
-                      content: userData?['email'] ?? 'غير متوفر'),
-                  ExpandableCard(title: "كلمة المرور", content: "******"),
+                    title: "البريد الالكتروني",
+                    content: userData?['email'] ?? 'غير متوفر',
+                    isEditable: true,
+                    controller: _emailController,
+                    onSave: (value) => updateUserData('email', value),
+                  ),
+                  ExpandableCard(
+                    title: "كلمة المرور",
+                    content: "******",
+                    isEditable: true,
+                    controller: _passwordController,
+                    onSave: (value) => updateUserData('password', value),
+                  ),
                 ],
               ),
             ),
@@ -100,7 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 class UserInfo extends StatelessWidget {
   final String name;
-  final String? imagePath; // المسار المخزن في Firestore
+  final String? imagePath;
 
   const UserInfo({super.key, required this.name, this.imagePath});
 
@@ -123,15 +187,15 @@ class UserInfo extends StatelessWidget {
             const SizedBox(width: 10),
             CircleAvatar(
               radius: 35,
-              backgroundColor: Color.fromRGBO(180, 179, 179, 1),
+              backgroundColor: const Color.fromRGBO(180, 179, 179, 1),
               backgroundImage: isAssetImage
-                  ? AssetImage(imagePath!) // تحميل الصورة من `assets/`
+                  ? AssetImage(imagePath!) as ImageProvider
                   : const AssetImage('assets/default-avatar.png')
                       as ImageProvider,
               child: !isAssetImage
                   ? const Icon(Icons.person,
                       size: 40, color: Color.fromARGB(255, 97, 97, 97))
-                  : null, // عرض أيقونة افتراضية إذا لم توجد صورة
+                  : null,
             ),
           ],
         ),
@@ -165,15 +229,58 @@ class CustomCard extends StatelessWidget {
 class ExpandableCard extends StatefulWidget {
   final String title;
   final String content;
-  const ExpandableCard({super.key, required this.title, required this.content});
+  final bool isEditable;
+  final TextEditingController? controller;
+  final Function(String)? onSave;
+
+  const ExpandableCard({
+    super.key,
+    required this.title,
+    required this.content,
+    this.isEditable = false,
+    this.controller,
+    this.onSave,
+  });
 
   @override
-  // ignore: library_private_types_in_public_api
   _ExpandableCardState createState() => _ExpandableCardState();
 }
 
 class _ExpandableCardState extends State<ExpandableCard> {
   bool isExpanded = false;
+
+  void _showEditDialog() {
+    if (!widget.isEditable ||
+        widget.controller == null ||
+        widget.onSave == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('تعديل ${widget.title}'),
+          content: TextField(
+            controller: widget.controller,
+            decoration:
+                InputDecoration(hintText: 'أدخل ${widget.title} الجديد'),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('إلغاء'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('حفظ'),
+              onPressed: () {
+                widget.onSave!(widget.controller!.text);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -199,10 +306,11 @@ class _ExpandableCardState extends State<ExpandableCard> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (widget.title == "رقم الهاتف" ||
-                      widget.title == "البريد الالكتروني" ||
-                      widget.title == "كلمة المرور")
-                    const Icon(Icons.edit, color: Colors.black),
+                  if (widget.isEditable)
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.black),
+                      onPressed: _showEditDialog,
+                    ),
                   IconButton(
                     icon: Icon(
                       isExpanded

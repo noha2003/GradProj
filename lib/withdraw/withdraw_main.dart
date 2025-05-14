@@ -81,7 +81,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
             'withdraw_reason': _reasonController.text.trim(),
           });
 
-          // **إضافة بيانات المستخدم إلى مجموعة withdrawn_candidates**
           await FirebaseFirestore.instance
               .collection('withdrawn candidates')
               .doc(uid)

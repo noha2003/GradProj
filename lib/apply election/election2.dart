@@ -20,8 +20,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
   bool isLoading = true;
 
   // Colors
-  static const Color headerColor = Color(0xFF7A0000); // Red from header
-  static const Color backgroundColor = Color(0xFFD9D9D9); // Gray background
+  static const Color headerColor = Color(0xFF7A0000);
+  static const Color backgroundColor = Color(0xFFD9D9D9);
   static const Color readOnlyBackgroundColor =
       Color.fromARGB(255, 201, 201, 201);
 
@@ -45,19 +45,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
   ];
   final List<String> readOnlyFields = [
     'الرقم الوطني',
-    'عمر المرشح',
-    'الدائرة الانتخابية للمرشح',
-    'المحافظة'
+    'المحافظة',
   ];
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers
     for (var field in fields) {
       _controllers[field['label']] = TextEditingController();
     }
-    // Fetch user data
     _fetchUserData();
   }
 
@@ -77,39 +73,67 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
       if (userDoc.exists) {
         setState(() {
-          // Prefill fields assuming the Firestore document has these fields
           _controllers['الرقم الوطني']?.text =
               userDoc['nationalId']?.toString() ?? '';
-          _controllers['عمر المرشح']?.text = userDoc['age']?.toString() ?? '';
-          _controllers['الدائرة الانتخابية للمرشح']?.text =
-              userDoc['electoralDistrict'] ?? '';
           _controllers['المحافظة']?.text = userDoc['gover'] ?? '';
-          isLoading = false; // Data loaded
+          isLoading = false;
         });
       } else {
         setState(() {
-          isLoading = false; // No data found
+          isLoading = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('بيانات المستخدم غير موجودة')),
+        );
       }
     } catch (e) {
       print("Error fetching user data: $e");
       setState(() {
-        isLoading = false; // Stop loading on error
+        isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطأ أثناء جلب البيانات: $e')),
+      );
     }
   }
 
-  void _submitForm() {
-    final docId = DateTime.now().millisecondsSinceEpoch.toString();
+  Future<void> _submitForm() async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
 
-    final data = {
-      for (var entry in _controllers.entries) entry.key: entry.value.text,
-      for (var entry in uploadedFiles.entries)
-        entry.key: entry.value?.name ?? '',
-      'timestamp': FieldValue.serverTimestamp(),
-    };
+      // Prepare form data
+      final data = {
+        for (var entry in _controllers.entries) entry.key: entry.value.text,
+        'files':
+            uploadedFiles.map((label, file) => MapEntry(label, file?.name)),
+        'userId': userId,
+        'status': 'pending',
+        'timestamp': FieldValue.serverTimestamp(),
+      };
 
-    FirebaseFirestore.instance.collection('forms').doc(docId).set(data);
+      // Save to forms collection
+      await FirebaseFirestore.instance.collection('forms').add(data);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تم تقديم الطلب بنجاح', textAlign: TextAlign.center),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SuccessScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('حدث خطأ أثناء تقديم الطلب: $e',
+              textAlign: TextAlign.center),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   bool _allFilesUploaded() {
@@ -130,7 +154,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             label,
             textAlign: TextAlign.right,
             style: const TextStyle(
-              color: Color.fromARGB(255, 0, 0, 0),
+              color: Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -140,7 +164,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
           textAlign: TextAlign.right,
           controller: _controllers[label],
           keyboardType: inputType,
-          readOnly: isReadOnly, // Set read-only for specified fields
+          readOnly: isReadOnly,
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
               return 'يرجى إدخال $label';
@@ -149,30 +173,22 @@ class _RegistrationFormState extends State<RegistrationForm> {
           },
           decoration: InputDecoration(
             filled: true,
-            fillColor: isReadOnly
-                ? readOnlyBackgroundColor
-                : backgroundColor, // Custom background color
+            fillColor: isReadOnly ? readOnlyBackgroundColor : backgroundColor,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: headerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: headerColor,
-              ),
+              borderSide: const BorderSide(color: headerColor),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: headerColor,
-              ),
+              borderSide: const BorderSide(color: headerColor),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: headerColor,
-              ),
+              borderSide: const BorderSide(color: headerColor),
             ),
           ),
         ),
@@ -191,7 +207,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
             label,
             textAlign: TextAlign.right,
             style: const TextStyle(
-              color: Color.fromARGB(255, 0, 0, 0),
+              color: Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -231,6 +247,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Column(
@@ -259,16 +280,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
                         if (_formKey.currentState!.validate() &&
                             _allFilesUploaded()) {
                           _submitForm();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SuccessScreen()),
-                          );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text(
-                                    'يرجى تعبئة جميع الحقول ورفع جميع الملفات')),
+                              content: Text(
+                                  'يرجى تعبئة جميع الحقول ورفع جميع الملفات'),
+                            ),
                           );
                         }
                       },

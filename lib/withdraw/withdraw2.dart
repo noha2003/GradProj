@@ -19,7 +19,7 @@ class SuccessWithdraw extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             const Text(
-              "تم انسحابك من  الانتخابات لهذه الدورة بنجاح. ",
+              "تم انسحابك من  الانتخابات لهذه الدورة بنجاح ",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
