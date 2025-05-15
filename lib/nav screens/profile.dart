@@ -281,7 +281,9 @@ class _ExpandableCardState extends State<ExpandableCard> {
   void _showEditDialog() {
     if (!widget.isEditable ||
         widget.controller == null ||
-        widget.onSave == null) return;
+        widget.onSave == null) {
+      return;
+    }
 
     showDialog(
       context: context,
