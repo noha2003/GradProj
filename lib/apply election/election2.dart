@@ -46,6 +46,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final List<String> readOnlyFields = [
     'الرقم الوطني',
     'المحافظة',
+    'عمر المرشح', // جعلنا حقل العمر للقراءة فقط لأنه يتم جلبه من Firestore
   ];
 
   @override
@@ -68,14 +69,19 @@ class _RegistrationFormState extends State<RegistrationForm> {
   Future<void> _fetchUserData() async {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
 
-      if (userDoc.exists) {
+      if (querySnapshot.docs.isNotEmpty) {
+        var userDoc = querySnapshot.docs.first;
         setState(() {
           _controllers['الرقم الوطني']?.text =
               userDoc['nationalId']?.toString() ?? '';
           _controllers['المحافظة']?.text = userDoc['gover'] ?? '';
+          _controllers['عمر المرشح']?.text = userDoc['age']?.toString() ?? '';
           isLoading = false;
         });
       } else {

@@ -20,6 +20,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   String? electoralDistrict;
   String? name;
   bool isLoading = true;
+  String? _documentId; // لتخزين documentId الحقيقي
 
   @override
   void initState() {
@@ -30,12 +31,21 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   Future<void> fetchUserData() async {
     try {
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+      if (uid == null) {
+        setState(() => isLoading = false);
+        _showMessage("يجب تسجيل الدخول أولًا!");
+        return;
+      }
 
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
 
-      if (userDoc.exists) {
+      if (querySnapshot.docs.isNotEmpty) {
+        var userDoc = querySnapshot.docs.first;
+        _documentId = userDoc.id; // تخزين documentId الحقيقي
         Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
 
         setState(() {
@@ -49,6 +59,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         _showMessage("لم يتم العثور على بياناتك.");
       }
     } catch (e) {
+      print("Error fetching user data: $e");
       setState(() => isLoading = false);
       _showMessage("حدث خطأ أثناء جلب البيانات: $e");
     }
@@ -63,27 +74,32 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
     try {
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) {
+      if (uid == null || _documentId == null) {
         _showMessage("يجب تسجيل الدخول أولًا!");
         return;
       }
 
-      DocumentSnapshot candidateDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      DocumentSnapshot candidateDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_documentId)
+          .get();
 
       if (candidateDoc.exists) {
         Map<String, dynamic> candidateData =
             candidateDoc.data() as Map<String, dynamic>;
 
         if (candidateData['status'] == 'مرشح') {
-          await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(_documentId)
+              .update({
             'status': 'غير مرشح',
             'withdraw_reason': _reasonController.text.trim(),
           });
 
           await FirebaseFirestore.instance
               .collection('withdrawn candidates')
-              .doc(uid)
+              .doc(_documentId)
               .set({
             'name': name,
             'nationalId': nationalId,

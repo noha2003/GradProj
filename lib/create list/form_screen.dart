@@ -139,19 +139,28 @@ class _FormScreenState extends State<FormScreen> {
   Future<void> _fetchUserData() async {
     try {
       String uid = FirebaseAuth.instance.currentUser!.uid;
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: uid)
+          .limit(1)
+          .get();
 
-      if (userDoc.exists) {
+      if (querySnapshot.docs.isNotEmpty) {
+        var userDoc = querySnapshot.docs.first;
         setState(() {
           nationalIdController.text = userDoc['nationalId'].toString();
-          firstnameController.text = userDoc['firstname'];
-          futhernameController.text = userDoc['futhername'];
-          lastnameController.text = userDoc['lastname'];
-          phoneController.text = userDoc['phoneNumber'];
-          emailController.text = userDoc['email'];
+          firstnameController.text = userDoc['firstname'] ?? '';
+          futhernameController.text = userDoc['futhername'] ?? '';
+          lastnameController.text = userDoc['lastname'] ?? '';
+          phoneController.text = userDoc['phoneNumber'] ?? '';
+          emailController.text = userDoc['email'] ?? '';
           isLoading = false;
         });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        print("No user data found for uid: $uid");
       }
     } catch (e) {
       print("Error fetching user data: $e");

@@ -20,6 +20,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  String? _documentId; // لتخزين documentId الحقيقي
 
   @override
   void initState() {
@@ -29,27 +30,50 @@ class _MenuScreenState extends State<MenuScreen> {
 
   Future<void> fetchUserData() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       User? user = _auth.currentUser;
       if (user != null) {
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
+        // البحث عن المستند الذي يحتوي على حقل uid يتطابق مع user.uid
+        QuerySnapshot querySnapshot = await _firestore
+            .collection('users')
+            .where('uid', isEqualTo: user.uid)
+            .limit(1)
+            .get();
 
-        if (userDoc.exists) {
+        if (querySnapshot.docs.isNotEmpty) {
+          var doc = querySnapshot.docs.first;
+          _documentId = doc.id; // تخزين documentId الحقيقي
           setState(() {
-            userData = userDoc.data() as Map<String, dynamic>;
+            userData = doc.data() as Map<String, dynamic>;
             isLoading = false;
           });
         } else {
           setState(() {
             isLoading = false;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('لم يتم العثور على بيانات المستخدم')),
+          );
         }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم تسجيل الدخول')),
+        );
       }
     } catch (e) {
       print("Error fetching user data: $e");
       setState(() {
         isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء جلب البيانات')),
+      );
     }
   }
 

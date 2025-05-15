@@ -140,6 +140,19 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                       User? user =
                           _auth.currentUser; // الحصول على المستخدم الحالي
 
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("يجب تسجيل الدخول أولاً"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      String userId = user.uid;
+                      print('Current User ID from FirebaseAuth: $userId');
+
                       // تحديث عدد أصوات كل مرشح
                       for (String candidateNumber in selectedCandidates) {
                         var candidateQuery = await _firestore
@@ -153,6 +166,11 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                               candidateQuery.docs.first.reference;
                           batch.update(
                               candidateDoc, {'votes': FieldValue.increment(1)});
+                          print(
+                              'Updated votes for candidate: $candidateNumber');
+                        } else {
+                          print(
+                              'No candidate found with number: $candidateNumber');
                         }
                       }
 
@@ -168,17 +186,49 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                           'totalVotes':
                               FieldValue.increment(selectedCandidates.length)
                         });
+                        print('Updated total votes for list: ${widget.name}');
+                      } else {
+                        print('No list found with name: ${widget.name}');
                       }
 
-                      // تحديث حالة isVoting للمستخدم إلى true
-                      if (user != null) {
-                        var userDoc =
-                            _firestore.collection('users').doc(user.uid);
+                      // البحث عن المستخدم باستخدام حقل uid داخل الوثيقة
+                      var userQuery = await _firestore
+                          .collection('users')
+                          .where('uid', isEqualTo: userId)
+                          .get();
+
+                      if (userQuery.docs.isNotEmpty) {
+                        var userDoc = userQuery.docs.first.reference;
                         batch.update(userDoc, {'isVoting': true});
+                        print(
+                            'Updated isVoting to false for user with UID: $userId');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                "لا يمكن تحديث حالة التصويت: المستخدم غير موجود"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        print(
+                            'No user found with UID field: $userId in users collection');
+                        return;
                       }
 
                       // تنفيذ التحديثات دفعة واحدة
-                      await batch.commit();
+                      try {
+                        await batch.commit();
+                        print('Batch commit completed successfully');
+                      } catch (e) {
+                        print('Error during batch commit: $e');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("حدث خطأ أثناء التصويت: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
 
                       // الانتقال لصفحة التأكيد
                       Navigator.push(

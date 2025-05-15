@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +29,92 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isDataLoaded = false;
+  String? _documentId;
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _idController.addListener(_onIdChanged);
+  }
+
+  void _onIdChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _fetchUserData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _idController.removeListener(_onIdChanged);
+    _idController.dispose();
+    _fullNameController.dispose();
+    _dobController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<bool> _fetchUserData() async {
+    if (_idController.text.isEmpty) {
+      return false;
+    }
+
+    try {
+      int nationalId = int.parse(_idController.text);
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('nationalId', isEqualTo: nationalId)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        _documentId = querySnapshot.docs.first.id;
+        print('Document ID found: $_documentId');
+        setState(() {
+          _isDataLoaded = true;
+          _fullNameController.text = userData['name'] ?? '';
+          _dobController.text = userData['birthDate'] ?? '';
+          _phoneController.text = userData['phoneNumber'] ?? '';
+        });
+        return true;
+      } else {
+        print('No document found for nationalId: $nationalId');
+        setState(() {
+          _isDataLoaded = false;
+          _fullNameController.clear();
+          _dobController.clear();
+          _phoneController.clear();
+          _documentId = null;
+        });
+        return false;
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      setState(() {
+        _isDataLoaded = false;
+        _fullNameController.clear();
+        _dobController.clear();
+        _phoneController.clear();
+        _documentId = null;
+      });
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.rightSlide,
+        title: 'خطأ',
+        desc: 'يرجى إدخال رقم وطني صحيح (أرقام فقط)',
+        btnOkOnPress: () {},
+      ).show();
+      return false;
+    }
+  }
 
   Future<void> _sendOTP() async {
     try {
@@ -52,34 +140,70 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   bool _isEligibleForRegistration(String dob) {
-    DateTime birthDate = DateFormat('yyyy-MM-dd').parse(dob);
-    DateTime currentDate = DateTime.now();
-    int age = currentDate.year - birthDate.year;
+    try {
+      DateTime birthDate = DateFormat('dd/MM/yyyy').parse(dob);
+      DateTime currentDate = DateTime.now();
+      int age = currentDate.year - birthDate.year;
 
-    if (currentDate.month < birthDate.month ||
-        (currentDate.month == birthDate.month &&
-            currentDate.day < birthDate.day)) {
-      age--;
+      if (currentDate.month < birthDate.month ||
+          (currentDate.month == birthDate.month &&
+              currentDate.day < birthDate.day)) {
+        age--;
+      }
+      return age >= 18;
+    } catch (e) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.rightSlide,
+        title: 'خطأ',
+        desc: 'تاريخ الميلاد غير صالح: $dob',
+        btnOkOnPress: () {},
+      ).show();
+      return false;
     }
-    return age >= 18;
   }
 
   Future<void> _storeUserData() async {
+    if (_documentId == null) {
+      print('Document ID is null. Cannot update document.');
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.rightSlide,
+        title: 'خطأ',
+        desc: 'لا يمكن العثور على المستند المطلوب',
+        btnOkOnPress: () {},
+      ).show();
+      return;
+    }
+
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      // إنشاء مستخدم في Firebase Authentication
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      // الحصول على uid الجديد
+      String newUid = credential.user!.uid;
+      print('New UID from Authentication: $newUid');
+
+      // تحديث مستند Firestore بالـ uid الجديد
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(_idController.text)
-          .set({
-        'id': _idController.text,
-        'full_name': _fullNameController.text,
-        'dob': _dobController.text,
-        'phone': _phoneController.text,
+          .doc(_documentId)
+          .update({
+        'uid': newUid,
         'email': _emailController.text,
-        'uid': user?.uid,
+        'password': _passwordController.text,
         'createdAt': FieldValue.serverTimestamp(),
+        'isVoting': false,
+        'status': 'غير مرشح',
       });
 
+      await _sendOTP();
       AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
@@ -95,6 +219,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         },
       ).show();
     } catch (e) {
+      print('Error storing user data: $e');
       AwesomeDialog(
         context: context,
         dialogType: DialogType.error,
@@ -106,12 +231,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  Future<bool> _checkExistingNationalId(String nationalId) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(nationalId)
-        .get();
-    return doc.exists;
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'يرجى إدخال كلمة المرور';
+    }
+    if (value.length <= 8) {
+      return 'كلمة المرور يجب أن تكون أكثر من 8 خانات';
+    }
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل';
+    }
+    if (!value.contains(RegExp(r'[a-z]'))) {
+      return 'كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل';
+    }
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل';
+    }
+    if (!value.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
+      return 'كلمة المرور يجب أن تحتوي على رمز واحد على الأقل (مثل !@#%^&*)';
+    }
+    return null;
   }
 
   @override
@@ -129,11 +268,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   maxLength: 10, keyboardType: TextInputType.number),
               _buildInputField(
                   "الاسم الكامل", Icons.account_circle, _fullNameController,
-                  maxLength: 80),
+                  maxLength: 80, isReadOnly: true),
               _buildDatePickerField(
-                  "تاريخ الميلاد", Icons.calendar_today, _dobController),
+                  "تاريخ الميلاد", Icons.calendar_today, _dobController,
+                  isReadOnly: true),
               _buildInputField("رقم الهاتف", Icons.phone, _phoneController,
-                  maxLength: 10, keyboardType: TextInputType.phone),
+                  maxLength: 10,
+                  keyboardType: TextInputType.phone,
+                  isReadOnly: true),
               _buildInputField(
                   "البريد الإلكتروني", Icons.email, _emailController,
                   maxLength: 80),
@@ -149,15 +291,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   _buildButton("التالي", const Color(0xFF7A0000), Colors.white,
                       () async {
                     if (_formKey.currentState!.validate()) {
-                      bool idExists =
-                          await _checkExistingNationalId(_idController.text);
-                      if (idExists) {
+                      bool idExists = await _fetchUserData();
+                      if (!idExists || !_isDataLoaded) {
                         AwesomeDialog(
                           context: context,
                           dialogType: DialogType.error,
                           animType: AnimType.rightSlide,
                           title: 'خطأ',
-                          desc: 'الرقم الوطني مستخدم بالفعل',
+                          desc: 'الرقم الوطني غير موجود في النظام',
                           btnOkOnPress: () {},
                         ).show();
                         return;
@@ -176,7 +317,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         return;
                       }
 
-                      if (!_isEligibleForRegistration(_dobController.text)) {
+                      if (_isDataLoaded &&
+                          !_isEligibleForRegistration(_dobController.text)) {
                         AwesomeDialog(
                           context: context,
                           dialogType: DialogType.warning,
@@ -189,12 +331,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       }
 
                       try {
-                        final credential = await FirebaseAuth.instance
-                            .createUserWithEmailAndPassword(
-                          email: _emailController.text,
-                          password: _passwordController.text,
-                        );
-                        await _sendOTP();
                         await _storeUserData();
                       } on FirebaseAuthException catch (e) {
                         String errorMessage = e.code == 'weak-password'
@@ -225,7 +361,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Widget _buildInputField(
       String label, IconData icon, TextEditingController controller,
-      {int maxLength = 80, TextInputType keyboardType = TextInputType.text}) {
+      {int maxLength = 80,
+      TextInputType keyboardType = TextInputType.text,
+      bool isReadOnly = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       child: Column(
@@ -243,7 +381,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
-            validator: (value) => value!.isEmpty ? 'يرجى ملء هذا الحقل' : null,
+            readOnly: isReadOnly,
+            validator: (value) => isReadOnly
+                ? null
+                : value!.isEmpty
+                    ? 'يرجى ملء هذا الحقل'
+                    : null,
             maxLength: maxLength,
             keyboardType: keyboardType,
             decoration: InputDecoration(
@@ -280,8 +423,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             controller: controller,
             obscureText:
                 isPassword ? _obscurePassword : _obscureConfirmPassword,
-            validator: (value) =>
-                value!.isEmpty ? 'يرجى إدخال كلمة المرور' : null,
+            validator: (value) => isPassword
+                ? _validatePassword(value)
+                : value != _passwordController.text
+                    ? 'كلمة المرور غير متطابقة'
+                    : null,
             maxLength: maxLength,
             decoration: InputDecoration(
               counterText: '',
@@ -334,7 +480,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Widget _buildDatePickerField(
-      String label, IconData icon, TextEditingController controller) {
+      String label, IconData icon, TextEditingController controller,
+      {bool isReadOnly = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
       child: Column(
@@ -353,28 +500,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           TextFormField(
             controller: controller,
             readOnly: true,
-            validator: (value) =>
-                value!.isEmpty ? 'يرجى اختيار تاريخ الميلاد' : null,
+            validator: (value) => isReadOnly && value!.isEmpty
+                ? 'يرجى اختيار تاريخ الميلاد'
+                : null,
             decoration: InputDecoration(
               prefixIcon: Icon(icon, color: Colors.grey),
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
             ),
-            onTap: () async {
-              DateTime? pickedDate = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-              );
-              if (pickedDate != null) {
-                String formattedDate =
-                    DateFormat('yyyy-MM-dd').format(pickedDate);
-                setState(() {
-                  controller.text = formattedDate;
-                });
-              }
-            },
           ),
         ],
       ),

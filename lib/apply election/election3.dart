@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gradproj/main_screen.dart';
 
 import '../header.dart';
-import '../login_screen.dart';
 
 class SuccessScreen extends StatefulWidget {
   const SuccessScreen({super.key});
@@ -59,7 +59,7 @@ class _SuccessScreenState extends State<SuccessScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const LoginScreen()),
+                          builder: (context) => const MainScreen()),
                     );
                   },
                   child: const Padding(

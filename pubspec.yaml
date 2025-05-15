@@ -85,6 +85,8 @@ flutter:
     - assets/images/qanonhy2a.jpeg
     - assets/images/qanonent.jpeg
     - assets/images/personalPic.jpg
+    - assets/images/manpic.jpg
+    # - assets\images\manpic.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

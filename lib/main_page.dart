@@ -8,7 +8,6 @@ import 'package:gradproj/voting/custom_button.dart';
 import 'package:gradproj/voting/voting_lists.dart';
 
 class MainPage extends StatefulWidget {
-  // تغيير إلى StatefulWidget
   const MainPage({super.key});
 
   @override
@@ -28,21 +27,43 @@ class _MainPageState extends State<MainPage> {
   Future<void> _checkVotingStatus() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
+      if (user == null) {
+        print('No user logged in');
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
+      String userId = user.uid;
+      print('Current User ID from FirebaseAuth: $userId');
+
+      // البحث عن المستخدم باستخدام حقل uid داخل الوثيقة
+      QuerySnapshot userQuery = await FirebaseFirestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: userId)
+          .get();
+
+      if (userQuery.docs.isNotEmpty) {
+        var userDoc = userQuery.docs.first;
         setState(() {
           _hasVoted = userDoc.get('isVoting') ?? false;
           _isLoading = false;
+        });
+        print('User found with UID: $userId, hasVoted: $_hasVoted');
+      } else {
+        print('No user found with UID field: $userId in users collection');
+        setState(() {
+          _isLoading = false;
+          _hasVoted =
+              false; // افتراض أن المستخدم لم يصوت إذا لم يتم العثور عليه
         });
       }
     } catch (e) {
       print('Error checking voting status: $e');
       setState(() {
         _isLoading = false;
+        _hasVoted = false;
       });
     }
   }
@@ -95,8 +116,7 @@ class _MainPageState extends State<MainPage> {
                         return VotingLists();
                       }));
                     },
-              isDisabled:
-                  _hasVoted, // افترض أن CustomButton يدعم خاصية isDisabled
+              isDisabled: _hasVoted,
             ),
             const SizedBox(height: 124),
             const CustomBackButton()

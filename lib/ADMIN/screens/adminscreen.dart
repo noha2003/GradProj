@@ -60,7 +60,7 @@ class _AdminScreenState extends State<AdminScreen> {
         await FirebaseFirestore.instance.collection('notifications').add({
           'userId': userId,
           'title': 'تمت الموافقة على القائمة',
-          'message': 'رمز قائمتك "$listName" هو: $uniqueCode',
+          'messagelist': 'رمز قائمتك "$listName" هو: $uniqueCode',
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,
         });
@@ -75,7 +75,7 @@ class _AdminScreenState extends State<AdminScreen> {
         await FirebaseFirestore.instance.collection('notifications').add({
           'userId': userId,
           'title': 'تم رفض القائمة',
-          'message':
+          'messagelist':
               'تم رفض قائمتك "$listName". يرجى التواصل مع الإدارة لمزيد من التفاصيل.',
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,

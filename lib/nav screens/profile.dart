@@ -16,6 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  String? _documentId; // لتخزين documentId الحقيقي
 
   // Controllers للتعديل
   final TextEditingController _phoneController = TextEditingController();
@@ -30,14 +31,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserData() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       User? user = _auth.currentUser;
       if (user != null) {
-        DocumentSnapshot userDoc =
-            await _firestore.collection('users').doc(user.uid).get();
+        // البحث عن المستند الذي يحتوي على حقل uid يتطابق مع user.uid
+        QuerySnapshot querySnapshot = await _firestore
+            .collection('users')
+            .where('uid', isEqualTo: user.uid)
+            .limit(1)
+            .get();
 
-        if (userDoc.exists) {
+        if (querySnapshot.docs.isNotEmpty) {
+          var doc = querySnapshot.docs.first;
+          _documentId = doc.id; // تخزين documentId الحقيقي
           setState(() {
-            userData = userDoc.data() as Map<String, dynamic>;
+            userData = doc.data() as Map<String, dynamic>;
             _phoneController.text = userData?['phoneNumber'] ?? '';
             _emailController.text = userData?['email'] ?? '';
             _passwordController.text = '******'; // كلمة المرور مخفية
@@ -47,33 +58,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             isLoading = false;
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('لم يتم العثور على بيانات المستخدم')),
+          );
         }
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم تسجيل الدخول')),
+        );
       }
     } catch (e) {
       print("Error fetching user data: $e");
       setState(() {
         isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء جلب البيانات')),
+      );
     }
   }
 
   Future<void> updateUserData(String field, String value) async {
+    if (_documentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('لا يمكن تحديث البيانات: المستند غير موجود')),
+      );
+      return;
+    }
+
     try {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .update({field: value});
-        setState(() {
-          userData?[field] = value;
-          if (field == 'phoneNumber') _phoneController.text = value;
-          if (field == 'email') _emailController.text = value;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم التحديث بنجاح')),
-        );
-      }
+      await _firestore
+          .collection('users')
+          .doc(_documentId)
+          .update({field: value});
+      setState(() {
+        userData?[field] = value;
+        if (field == 'phoneNumber') _phoneController.text = value;
+        if (field == 'email') _emailController.text = value;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم التحديث بنجاح')),
+      );
     } catch (e) {
       print("Error updating user data: $e");
       ScaffoldMessenger.of(context).showSnackBar(
