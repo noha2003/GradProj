@@ -92,7 +92,7 @@ class _MainPageState extends State<MainPage> {
                   : () {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (BuildContext context) {
-                        return VotingLists();
+                        return const VotingLists();
                       }));
                     },
               isDisabled:

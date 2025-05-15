@@ -367,14 +367,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now(),
               );
-              if (pickedDate != null) {
-                String formattedDate =
-                    DateFormat('yyyy-MM-dd').format(pickedDate);
-                setState(() {
-                  controller.text = formattedDate;
-                });
-              }
-            },
+              String formattedDate =
+                  DateFormat('yyyy-MM-dd').format(pickedDate!);
+              setState(() {
+                controller.text = formattedDate;
+              });
+                        },
           ),
         ],
       ),

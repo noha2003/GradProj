@@ -26,17 +26,3 @@ class ImageLogo extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-/*CircleAvatar(
-      radius: 40,
-      backgroundColor: const Color.fromRGBO(217, 217, 217, 1),
-      child: Image.asset(
-        'assets/images/tajdeed.png', // استبدلها بصورة الشعار
-        height: 50,
-        fit: BoxFit.contain,
-      ),
-    );*/ 

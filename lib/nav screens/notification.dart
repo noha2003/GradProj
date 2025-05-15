@@ -16,8 +16,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-    print('Current User ID: $currentUserId');
-
     if (currentUserId == null) {
       return const Home_without(
         child: Center(
@@ -55,7 +53,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            debugPrint('Firestore error: ${snapshot.error}', wrapWidth: 1024);
             return const Home_without(
               child: Center(
                 child: Column(
@@ -107,7 +104,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
 
           final notifications = snapshot.data!.docs;
-          print('Fetched ${notifications.length} notifications');
 
           return Home_without(
             child: ListView.builder(
@@ -117,11 +113,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 final notification = notifications[index];
                 final data = notification.data() as Map<String, dynamic>;
 
-                // التحقق من وجود الحقول المطلوبة
-                if (!data.containsKey('userId') ||
-                    !data.containsKey('timestamp')) {
-                  print('Invalid notification data at index $index: $data');
-                  return const SizedBox.shrink(); // تخطي الإشعار غير الصالح
+                if (!data.containsKey('userId') || !data.containsKey('timestamp')) {
+                  return const SizedBox.shrink();
                 }
 
                 final timestamp = (data['timestamp'] as Timestamp?)?.toDate();

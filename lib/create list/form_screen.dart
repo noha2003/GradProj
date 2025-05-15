@@ -117,7 +117,7 @@ class _FormScreenState extends State<FormScreen> {
       title: title,
       desc: message,
       btnOkOnPress: () {},
-    )..show();
+    ).show();
   }
 
   void _showMessage(String message, {bool success = false}) {

@@ -30,7 +30,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   Future<void> fetchUserData() async {
     try {
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
 
       DocumentSnapshot userDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
@@ -63,10 +62,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
     try {
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) {
-        _showMessage("يجب تسجيل الدخول أولًا!");
-        return;
-      }
 
       DocumentSnapshot candidateDoc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
