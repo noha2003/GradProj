@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           title: 'خطأ',
                           desc: 'يرجى إدخال البريد الإلكتروني وكلمة المرور.',
                           btnOkOnPress: () {},
-                        )..show();
+                        ).show();
                         return;
                       }
 
@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           title: 'فشل تسجيل الدخول',
                           desc: errorMessage,
                           btnOkOnPress: () {},
-                        )..show();
+                        ).show();
                       } catch (e) {
                         AwesomeDialog(
                           context: context,
@@ -142,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           title: 'خطأ',
                           desc: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
                           btnOkOnPress: () {},
-                        )..show();
+                        ).show();
                       }
                     },
                     style: ElevatedButton.styleFrom(

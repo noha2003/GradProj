@@ -6,13 +6,13 @@ class CustomButton extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.onTap,
-    this.isDisabled = false, // إضافة خاصية isDisabled مع قيمة افتراضية false
+    this.isDisabled = false, 
   });
 
   final IconData icon;
   final String text;
   final VoidCallback onTap;
-  final bool isDisabled; // المعلمة الجديدة
+  final bool isDisabled; 
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +22,12 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: isDisabled
             ? null
-            : onTap, // إذا كان isDisabled true، يتم تعطيل الضغط
+            : onTap, 
         icon: Icon(
           icon,
           color: isDisabled
               ? Colors.grey
-              : const Color(0xFF7A0000), // تغيير اللون عند التعطيل
+              : const Color(0xFF7A0000),
           size: 80,
         ),
         label: Text(
@@ -36,13 +36,13 @@ class CustomButton extends StatelessWidget {
             fontSize: 20,
             color: isDisabled
                 ? Colors.grey
-                : const Color(0xFF7A0000), // تغيير لون النص
+                : const Color(0xFF7A0000),
             fontWeight: FontWeight.bold,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: isDisabled
-              ? Colors.grey[300] // لون خلفية باهت عند التعطيل
+              ? Colors.grey[300] 
               : const Color.fromRGBO(217, 217, 217, 1),
           foregroundColor: isDisabled ? Colors.grey : const Color(0xFF7A0000),
           shape: RoundedRectangleBorder(
@@ -50,10 +50,10 @@ class CustomButton extends StatelessWidget {
             side: BorderSide(
               color: isDisabled
                   ? Colors.grey
-                  : const Color(0xFF7A0000), // لون الحدود
+                  : const Color(0xFF7A0000), 
             ),
           ),
-          elevation: isDisabled ? 0 : 4, // إزالة الظل عند التعطيل
+          elevation: isDisabled ? 0 : 4, 
           shadowColor: Colors.black26,
         ),
       ),

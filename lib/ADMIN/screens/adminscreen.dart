@@ -477,7 +477,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      CandidacyRequestsScreen(),
+                                      const CandidacyRequestsScreen(),
                                 ),
                               );
                             },
