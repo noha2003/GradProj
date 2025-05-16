@@ -86,7 +86,6 @@ class Candidates extends StatelessWidget {
                         };
                       },
                       name: candidatesInfo[index]["name"] ?? "",
-                      seat: candidatesInfo[index]["seat"] ?? "",
                       number: candidatesInfo[index]["number"] ?? "0",
                     ),
                   );

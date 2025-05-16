@@ -23,59 +23,113 @@ class _InitialResultsState extends State<InitialResults> {
   }
 
   Future<void> fetchElectionResults() async {
+    print("جارٍ جلب النتائج للدائرة: ${widget.districtName}");
     try {
+      // الخطوة 1: استرجاع القوائم من approved_list بناءً على الدائرة
       QuerySnapshot listsSnapshot = await _firestore
-          .collection('election_lists')
-          .where('district', isEqualTo: widget.districtName)
+          .collection('approved_list')
+          .where('constituency', isEqualTo: widget.districtName)
           .get();
+
+      print("عدد الوثائق في approved_list: ${listsSnapshot.docs.length}");
+      if (listsSnapshot.docs.isEmpty) {
+        print("لا توجد قوائم في هذه الدائرة: ${widget.districtName}");
+        setState(() {
+          electionResults = {};
+        });
+        return;
+      }
 
       Map<String, Map<String, dynamic>> results = {};
 
-      for (var listDoc in listsSnapshot.docs) {
-        String listName = listDoc["name"];
-        String listNumber = listDoc["number"];
+      // الخطوة 2: استرجاع الأصوات من election_results (إذا كانت موجودة)
+      QuerySnapshot resultSnapshot = await _firestore
+          .collection('election_results')
+          .where('constituency', isEqualTo: widget.districtName)
+          .get();
 
-        QuerySnapshot candidatesSnapshot = await _firestore
-            .collection('candidates_info')
-            .where('listName', isEqualTo: listName)
-            .get();
-
-        int listVotes = 0;
-        List<Map<String, dynamic>> candidates = [];
-
-        for (var candidate in candidatesSnapshot.docs) {
-          int candidateVotes = candidate["votes"] ?? 0;
-          listVotes += candidateVotes;
-
-          candidates.add({
-            "name": candidate["name"],
-            "votes": candidateVotes,
-          });
+      print("عدد الوثائق في election_results: ${resultSnapshot.docs.length}");
+      Map<String, Map<String, dynamic>> votesData = {};
+      if (resultSnapshot.docs.isNotEmpty) {
+        var resultDoc = resultSnapshot.docs.first;
+        var data = resultDoc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          List<dynamic>? lists = data['lists'];
+          print("تم العثور على قوائم في election_results: ${lists?.length}");
+          if (lists != null) {
+            for (var list in lists) {
+              var listData = list as Map<String, dynamic>?;
+              if (listData != null) {
+                String? listName = listData['listName'] as String?;
+                if (listName != null) {
+                  votesData[listName] = {
+                    "totalVotes": listData['totalVotes'] ?? 0,
+                    "members": Map.fromIterable(
+                      (listData['members'] ?? []) as Iterable,
+                      key: (member) =>
+                          (member as Map<String, dynamic>?)?['name'] ?? '',
+                      value: (member) =>
+                          (member as Map<String, dynamic>?)?['votes'] ?? 0,
+                    ),
+                  };
+                }
+              }
+            }
+          }
         }
+      }
 
-        // Add the list data to results map with listName as key
-        results[listName] = {
-          "number": listNumber,
-          "totalVotes": listVotes,
-          "candidates": candidates,
-        };
+      // الخطوة 3: بناء النتائج بناءً على القوائم من approved_list
+      for (var listDoc in listsSnapshot.docs) {
+        var data = listDoc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          String? listName = data['listName'] as String?;
+          if (listName != null) {
+            List<dynamic>? members = data['members'];
+            print(
+                "تم العثور على members للقائمة $listName: ${members?.length}");
+            if (members != null) {
+              // تحويل members إلى قائمة من المرشحين مع الأصوات
+              List<Map<String, dynamic>> candidates = members.map((member) {
+                var memberData = member as Map<String, dynamic>?;
+                String candidateName = memberData?['name'] ?? "مرشح بدون اسم";
+                int candidateVotes = votesData.containsKey(listName) &&
+                        votesData[listName]?["members"]
+                                .containsKey(candidateName) ==
+                            true
+                    ? (votesData[listName]?["members"][candidateName] ?? 0)
+                    : 0;
 
-        try {
-          await _firestore
-              .collection('election_lists')
-              .doc(listDoc.id)
-              .update({"totalVotes": listVotes});
-        } catch (e) {
-          print("خطأ في تحديث totalVotes: $e");
+                return {
+                  "name": candidateName,
+                  "votes": candidateVotes,
+                };
+              }).toList();
+
+              int totalVotes = votesData.containsKey(listName)
+                  ? (votesData[listName]?["totalVotes"] ?? 0)
+                  : 0;
+
+              results[listName] = {
+                "number": data['listCode'] ??
+                    "", // لا يزال يتم إنشاؤه للتوافق مع البيانات
+                "totalVotes": totalVotes,
+                "candidates": candidates,
+              };
+            }
+          }
         }
       }
 
       setState(() {
-        electionResults = results; // Assign the map directly
+        electionResults = results;
       });
-      print("✅ تم جلب البيانات بنجاح");
+      print("✅ تم جلب البيانات بنجاح، عدد القوائم: ${results.length}");
     } catch (e) {
       print("❌ خطأ أثناء جلب النتائج: $e");
+      setState(() {
+        electionResults = {};
+      });
     }
   }
 
@@ -101,7 +155,15 @@ class _InitialResultsState extends State<InitialResults> {
               const SizedBox(height: 26),
               Expanded(
                 child: electionResults.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(
+                        child: Text(
+                          "لا توجد نتائج متاحة لهذه الدائرة",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Color(0xFF7A0000),
+                          ),
+                        ),
+                      )
                     : SingleChildScrollView(
                         child: Column(
                           children: electionResults.entries.map((entry) {
@@ -114,7 +176,7 @@ class _InitialResultsState extends State<InitialResults> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'القائمة: $listName (رقم ${listData["number"]}) - إجمالي الأصوات: ${listData["totalVotes"]}',
+                                    'القائمة: $listName - إجمالي الأصوات: ${listData["totalVotes"]}', // إزالة listCode من النص
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,

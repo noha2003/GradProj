@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/election_district.dart';
+import 'package:gradproj/election_districtF.dart';
 import 'package:gradproj/home2.dart';
 import 'package:gradproj/voting/custom_button.dart';
 
@@ -22,7 +22,7 @@ class FinalMainPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ElectionDistrictsScreen(
+                        builder: (context) => ElectionDistrictsScreenF(
                             screenType: ElectionScreenType.initialResults),
                       ),
                     );
@@ -36,7 +36,7 @@ class FinalMainPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ElectionDistrictsScreen(
+                      builder: (context) => ElectionDistrictsScreenF(
                           screenType: ElectionScreenType.finalResults),
                     ),
                   );

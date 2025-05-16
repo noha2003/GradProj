@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 class CandidateCard extends StatelessWidget {
   final String name;
-  final String seat;
   final String number;
-  const CandidateCard(
-      {super.key,
-      required this.onTap,
-      required this.name,
-      required this.seat,
-      required this.number});
-
   final VoidCallback onTap;
+
+  const CandidateCard({
+    super.key,
+    required this.onTap,
+    required this.name,
+    required this.number,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -38,17 +38,7 @@ class CandidateCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      // ignore: unnecessary_null_comparison
                       "اسم المرشح: $name",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Color(0xFF7A0000),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "المقعد: $seat",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,

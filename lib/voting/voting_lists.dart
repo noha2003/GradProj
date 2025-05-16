@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart'; // 🔹 استيراد Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
 import 'package:gradproj/home2.dart';
@@ -6,7 +6,9 @@ import 'package:gradproj/voting/lists_page.dart';
 import 'package:gradproj/voting/voting.dart';
 
 class VotingLists extends StatefulWidget {
-  const VotingLists({super.key});
+  final String districtName;
+
+  const VotingLists({super.key, required this.districtName});
 
   @override
   _VotingListsState createState() => _VotingListsState();
@@ -16,16 +18,26 @@ class _VotingListsState extends State<VotingLists> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Map<String, dynamic>>> _fetchLists() async {
-    QuerySnapshot querySnapshot =
-        await _firestore.collection('election_lists').get();
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('approved_list')
+        .where('constituency', isEqualTo: widget.districtName)
+        .get();
 
-    return querySnapshot.docs
-        .map((doc) => {
-              "number": doc["number"].toString(),
-              "name": doc["name"],
-              "image": doc["image"]
-            })
-        .toList();
+    List<Map<String, dynamic>> lists = [];
+    int index = 1;
+    for (var doc in querySnapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      lists.add({
+        "number": index.toString(),
+        "name": data["listName"] ?? "قائمة بدون اسم",
+        "image": data["uploadedFiles"] != null &&
+                data["uploadedFiles"]["صورة_رمز_القائمة"] != null
+            ? data["uploadedFiles"]["صورة_رمز_القائمة"]
+            : "assets/images/logo.png",
+      });
+      index++;
+    }
+    return lists;
   }
 
   @override
@@ -45,9 +57,7 @@ class _VotingListsState extends State<VotingLists> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             FutureBuilder<List<Map<String, dynamic>>>(
               future: _fetchLists(),
               builder: (context, snapshot) {

@@ -16,28 +16,20 @@ class ElectionListsScreen extends StatefulWidget {
 
 class _ElectionListsScreenState extends State<ElectionListsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Future<void> updateElectionList(String docId, String newName) async {
-    await FirebaseFirestore.instance
-        .collection('election_lists')
-        .doc(docId)
-        .update({
-          'name': newName,
-        })
-        .then((_) => print("تم التحديث بنجاح"))
-        .catchError((error) => print("حدث خطأ: $error"));
-  }
 
+  // حذف updateElectionList لأننا لم نعد نحتاجها مباشرة (يمكن إعادة إضافتها إذا لزم الأمر)
   Future<List<Map<String, dynamic>>> _fetchLists() async {
     QuerySnapshot querySnapshot = await _firestore
-        .collection('election_lists')
-        .where('district', isEqualTo: widget.districtName)
+        .collection('approved_list')
+        .where('constituency', isEqualTo: widget.districtName)
         .get();
 
     return querySnapshot.docs
         .map((doc) => {
-              "number": doc["number"].toString(),
-              "name": doc["name"],
-              "image": doc["image"]
+              "number":
+                  doc["listCode"]?.toString() ?? "", // استخدام listCode كبديل
+              "name": doc["listName"] ?? "",
+              "image": doc["image"] ?? "assets/images/logo.png",
             })
         .toList();
   }
@@ -75,13 +67,11 @@ class _ElectionListsScreenState extends State<ElectionListsScreen> {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('election_lists')
-                  .where('district', isEqualTo: widget.districtName)
+                  .collection('approved_list')
+                  .where('constituency', isEqualTo: widget.districtName)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -111,17 +101,18 @@ class _ElectionListsScreenState extends State<ElectionListsScreen> {
                           MaterialPageRoute(
                             builder: (BuildContext context) {
                               return Candidates(
-                                image: listData["image"] ?? "",
-                                listName: listData["name"] ?? "",
-                                num: listData["number"],
+                                image: listData["image"] ??
+                                    "assets/images/logo.png",
+                                listName: listData["listName"] ?? "",
+                                num: listData["listCode"]?.toString() ?? "",
                               );
                             },
                           ),
                         );
                       },
-                      name: listData["name"] ?? "",
+                      name: listData["listName"] ?? "",
                       image: listData["image"] ?? "assets/images/logo.png",
-                      number: listData["number"].toString(),
+                      number: listData["listCode"]?.toString() ?? "",
                     );
                   },
                 );

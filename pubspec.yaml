@@ -74,6 +74,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/images/logo.jpeg
+    - assets/images/logo.png
     - assets/images/nashama.png
     - assets/images/tajdeed.png
     - assets/images/wefaq.png

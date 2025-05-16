@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
+import 'package:gradproj/finalResult/final_results.dart';
+import 'package:gradproj/finalResult/initial_result.dart';
 import 'package:gradproj/home.dart';
-import 'package:gradproj/voting/voting_lists.dart';
 
 enum ElectionScreenType {
   viewLists, // عرض القوائم الانتخابية
@@ -9,10 +10,10 @@ enum ElectionScreenType {
   finalResults // النتائج النهائية
 }
 
-class ElectionDistrictsScreen extends StatelessWidget {
+class ElectionDistrictsScreenF extends StatelessWidget {
   final ElectionScreenType screenType;
 
-  ElectionDistrictsScreen({super.key, required this.screenType});
+  ElectionDistrictsScreenF({super.key, required this.screenType});
 
   final List<Map<String, dynamic>> districtsData = [
     {"name": "العاصمة - الدائرة الانتخابية الأولى", "id": 1},
@@ -102,7 +103,7 @@ class ElectionDistrictsScreen extends StatelessWidget {
       case ElectionScreenType.initialResults:
         return "النتائج الأولية للانتخابات 2028";
       case ElectionScreenType.finalResults:
-        return "النتائج النهائية للانتخابات 2024";
+        return "النتائج النهائية للسنوات السابقة";
       default:
         return "";
     }
@@ -112,16 +113,15 @@ class ElectionDistrictsScreen extends StatelessWidget {
     Widget nextScreen;
     switch (screenType) {
       case ElectionScreenType.viewLists:
-        nextScreen =
-            VotingLists(districtName: districtName); // تمرير districtName
+        // يمكنك إضافة صفحة أخرى هنا إذا كنت تريد عرض القوائم
+        nextScreen = Container(); // استبدل بصفحة مناسبة
         break;
       case ElectionScreenType.initialResults:
-        nextScreen =
-            Container(); // استبدال مؤقت، أضف تعريف InitialResults إذا كان موجودًا
+        nextScreen = InitialResults(districtName: districtName);
         break;
       case ElectionScreenType.finalResults:
         nextScreen =
-            Container(); // استبدال مؤقت، أضف تعريف ElectionResultsScreen إذا كان موجودًا
+            ElectionResultsScreen(districtName: districtName); // افتراضي
         break;
     }
 

@@ -1,3 +1,6 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradproj/apply%20election/election1.dart';
 import 'package:gradproj/create%20list/create_list.dart';
@@ -10,12 +13,10 @@ import 'package:gradproj/nav%20screens/bar.dart';
 import 'package:gradproj/nav%20screens/notification.dart';
 import 'package:gradproj/nav%20screens/profile.dart';
 import 'package:gradproj/withdraw/withdraw_main.dart';
-//import 'package:gradproj/withdraw/withdraw-main.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
   @override
-  // ignore: library_private_types_in_public_api
   _MainScreenState createState() => _MainScreenState();
 }
 
@@ -49,6 +50,30 @@ class _MainScreenState extends State<MainScreen> {
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<bool> _hasAppliedBefore() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      String userId = user.uid;
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection('forms')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        print('User $userId has already applied');
+        return true; // المستخدم لديه طلب سابق
+      }
+      print('No application found for user $userId');
+      return false; // لا يوجد طلب سابق
+    } catch (e) {
+      print('Error checking application status: $e');
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> menuItems = [
@@ -72,7 +97,7 @@ class HomeScreen extends StatelessWidget {
         itemCount: menuItems.length,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (menuItems[index]['label'] == 'الانسحاب من الانتخابات') {
                 Navigator.push(
                   context,
@@ -80,11 +105,25 @@ class HomeScreen extends StatelessWidget {
                       builder: (context) => const WithdrawalScreen()),
                 );
               } else if (menuItems[index]['label'] == 'الترشح للانتخابات') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ElectionCodeScreen()),
-                );
+                bool hasApplied = await _hasAppliedBefore();
+                if (hasApplied) {
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.warning,
+                    animType: AnimType.bottomSlide,
+                    title: 'تم التقديم مسبقًا',
+                    desc:
+                        'لقد قمت بإرسال طلب من قبل ولا يمكنك التقديم مرة أخرى',
+                    btnOkText: 'حسنًا',
+                    btnOkOnPress: () {},
+                  ).show();
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ElectionCodeScreen()),
+                  );
+                }
               } else if (menuItems[index]['label'] == "التصويت") {
                 Navigator.push(
                   context,

@@ -2,10 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // إضافة Firestore
 import 'package:firebase_auth/firebase_auth.dart'; // إضافة Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/election_district.dart';
+import 'package:gradproj/election_district.dart'; // استيراد ElectionScreenType
 import 'package:gradproj/home2.dart';
 import 'package:gradproj/voting/custom_button.dart';
-import 'package:gradproj/voting/voting_lists.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -111,10 +110,12 @@ class _MainPageState extends State<MainPage> {
               onTap: _hasVoted
                   ? _showHasVotedMessage
                   : () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (BuildContext context) {
-                        return const VotingLists();
-                      }));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ElectionDistrictsScreen(
+                                screenType: ElectionScreenType.viewLists),
+                          ));
                     },
               isDisabled: _hasVoted,
             ),

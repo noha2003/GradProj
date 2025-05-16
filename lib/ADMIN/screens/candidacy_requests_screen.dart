@@ -57,7 +57,7 @@ class _CandidacyRequestsScreenState extends State<CandidacyRequestsScreen> {
       await FirebaseFirestore.instance.collection('notifications').add({
         'userId': userId,
         'title': notificationTitle,
-        'message': notificationMessage,
+        'messagelist': notificationMessage,
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
       });

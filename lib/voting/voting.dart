@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // إضافة Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
 import 'package:gradproj/home2.dart';
@@ -25,7 +25,7 @@ class CandidateSelectionPage extends StatefulWidget {
 class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
   Set<String> selectedCandidates = {};
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance; // إضافة Firebase Auth
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
             const SizedBox(height: 10),
             StreamBuilder(
               stream: _firestore
-                  .collection('candidates_info')
+                  .collection('approved_list')
                   .where('listName', isEqualTo: widget.name)
                   .snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -59,7 +59,18 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                       child: Text("لا يوجد مرشحون في هذه القائمة"));
                 }
 
-                var candidates = snapshot.data!.docs;
+                var listDoc = snapshot.data!.docs.first;
+                List<dynamic> members = listDoc["members"] ?? [];
+                String constituency = listDoc["constituency"] ?? "";
+                String listCode = listDoc["listCode"] ?? "";
+                List<Map<String, dynamic>> candidates = [];
+                for (int i = 0; i < members.length; i++) {
+                  candidates.add({
+                    "number": (i + 1).toString(),
+                    "name": members[i]["name"] ?? "مرشح بدون اسم",
+                  });
+                }
+
                 return ListView.builder(
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
@@ -67,7 +78,7 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                   itemCount: candidates.length,
                   itemBuilder: (context, index) {
                     var candidate = candidates[index];
-                    String candidateNumber = candidate["number"].toString();
+                    String candidateNumber = candidate["number"];
                     bool isSelected =
                         selectedCandidates.contains(candidateNumber);
 
@@ -106,7 +117,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                               });
                             },
                             name: candidate["name"] ?? "",
-                            seat: candidate["seat"] ?? "",
                             number: candidateNumber,
                           ),
                         ),
@@ -137,8 +147,7 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                       }
 
                       WriteBatch batch = _firestore.batch();
-                      User? user =
-                          _auth.currentUser; // الحصول على المستخدم الحالي
+                      User? user = _auth.currentUser;
 
                       if (user == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -153,45 +162,103 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                       String userId = user.uid;
                       print('Current User ID from FirebaseAuth: $userId');
 
-                      // تحديث عدد أصوات كل مرشح
-                      for (String candidateNumber in selectedCandidates) {
-                        var candidateQuery = await _firestore
-                            .collection('candidates_info')
-                            .where('number', isEqualTo: candidateNumber)
-                            .where('listName', isEqualTo: widget.name)
-                            .get();
+                      // جلب بيانات القائمة
+                      var listQuery = await _firestore
+                          .collection('approved_list')
+                          .where('listName', isEqualTo: widget.name)
+                          .get();
 
-                        if (candidateQuery.docs.isNotEmpty) {
-                          var candidateDoc =
-                              candidateQuery.docs.first.reference;
-                          batch.update(
-                              candidateDoc, {'votes': FieldValue.increment(1)});
-                          print(
-                              'Updated votes for candidate: $candidateNumber');
-                        } else {
-                          print(
-                              'No candidate found with number: $candidateNumber');
+                      if (listQuery.docs.isEmpty) {
+                        print('No list found with name: ${widget.name}');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("القائمة غير موجودة"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      var listDoc = listQuery.docs.first;
+                      String constituency = listDoc["constituency"] ?? "";
+                      String listCode = listDoc["listCode"] ?? "";
+                      List<dynamic> members = listDoc["members"] ?? [];
+
+                      // جلب أو إنشاء وثيقة نتائج الدائرة في election_results
+                      var resultQuery = await _firestore
+                          .collection('election_results')
+                          .where('constituency', isEqualTo: constituency)
+                          .get();
+
+                      DocumentReference resultDocRef;
+                      if (resultQuery.docs.isEmpty) {
+                        // إنشاء وثيقة جديدة إذا لم تكن موجودة
+                        resultDocRef =
+                            _firestore.collection('election_results').doc();
+                        await resultDocRef.set({
+                          'constituency': constituency,
+                          'lists': [],
+                        });
+                      } else {
+                        resultDocRef = resultQuery.docs.first.reference;
+                      }
+
+                      // جلب الوثيقة مرة أخرى للتأكد من وجودها
+                      var resultDoc = await resultDocRef.get();
+                      List<dynamic> lists = resultDoc.exists
+                          ? (resultDoc.data()
+                                  as Map<String, dynamic>)['lists'] ??
+                              []
+                          : [];
+
+                      // البحث عن القائمة في election_results
+                      int listIndex = lists.indexWhere(
+                          (list) => list['listName'] == widget.name);
+
+                      if (listIndex == -1) {
+                        // إضافة القائمة إذا لم تكن موجودة
+                        lists.add({
+                          'listName': widget.name,
+                          'listCode':
+                              listCode, // إضافة listCode للتوافق مع InitialResults
+                          'totalVotes': selectedCandidates.length,
+                          'members': members.map((member) {
+                            int memberIndex = members.indexOf(member) + 1;
+                            return {
+                              'name': member['name'] ?? "مرشح بدون اسم",
+                              'votes': selectedCandidates
+                                      .contains(memberIndex.toString())
+                                  ? 1
+                                  : 0,
+                            };
+                          }).toList(),
+                        });
+                      } else {
+                        // تحديث القائمة الموجودة
+                        lists[listIndex]['totalVotes'] =
+                            (lists[listIndex]['totalVotes'] ?? 0) +
+                                selectedCandidates.length;
+                        for (var member in lists[listIndex]['members']) {
+                          int memberIndex =
+                              lists[listIndex]['members'].indexOf(member) + 1;
+                          if (selectedCandidates
+                              .contains(memberIndex.toString())) {
+                            member['votes'] = (member['votes'] ?? 0) + 1;
+                          }
                         }
                       }
 
-                      // تحديث عدد الأصوات للقائمة
-                      var listQuery = await _firestore
-                          .collection('lists_info')
-                          .where('name', isEqualTo: widget.name)
-                          .get();
+                      // تحديث وثيقة election_results
+                      batch.set(
+                        resultDocRef,
+                        {
+                          'constituency': constituency,
+                          'lists': lists,
+                        },
+                        SetOptions(merge: true),
+                      );
 
-                      if (listQuery.docs.isNotEmpty) {
-                        var listDoc = listQuery.docs.first.reference;
-                        batch.update(listDoc, {
-                          'totalVotes':
-                              FieldValue.increment(selectedCandidates.length)
-                        });
-                        print('Updated total votes for list: ${widget.name}');
-                      } else {
-                        print('No list found with name: ${widget.name}');
-                      }
-
-                      // البحث عن المستخدم باستخدام حقل uid داخل الوثيقة
+                      // تحديث حالة التصويت للمستخدم
                       var userQuery = await _firestore
                           .collection('users')
                           .where('uid', isEqualTo: userId)
@@ -201,7 +268,7 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         var userDoc = userQuery.docs.first.reference;
                         batch.update(userDoc, {'isVoting': true});
                         print(
-                            'Updated isVoting to false for user with UID: $userId');
+                            'Updated isVoting to true for user with UID: $userId');
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -215,7 +282,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         return;
                       }
 
-                      // تنفيذ التحديثات دفعة واحدة
                       try {
                         await batch.commit();
                         print('Batch commit completed successfully');
@@ -230,7 +296,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         return;
                       }
 
-                      // الانتقال لصفحة التأكيد
                       Navigator.push(
                         context,
                         MaterialPageRoute(

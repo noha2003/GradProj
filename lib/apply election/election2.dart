@@ -43,10 +43,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
     'شهادة عدم محكومية',
     'التوقيع',
   ];
+
   final List<String> readOnlyFields = [
     'الرقم الوطني',
     'المحافظة',
-    'عمر المرشح', // جعلنا حقل العمر للقراءة فقط لأنه يتم جلبه من Firestore
+    'عمر المرشح',
+    'الدائرة الانتخابية للمرشح', // Added to read-only fields
   ];
 
   @override
@@ -82,6 +84,8 @@ class _RegistrationFormState extends State<RegistrationForm> {
               userDoc['nationalId']?.toString() ?? '';
           _controllers['المحافظة']?.text = userDoc['gover'] ?? '';
           _controllers['عمر المرشح']?.text = userDoc['age']?.toString() ?? '';
+          _controllers['الدائرة الانتخابية للمرشح']?.text =
+              userDoc['electoralDistrict'] ?? ''; // Fetch electoralDistrict
           isLoading = false;
         });
       } else {

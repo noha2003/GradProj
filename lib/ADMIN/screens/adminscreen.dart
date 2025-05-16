@@ -18,14 +18,14 @@ class AdminScreen extends StatefulWidget {
 class _AdminScreenState extends State<AdminScreen> {
   final Uuid _uuid = const Uuid();
 
-  Future<void> updateListStatus(String listId, String newStatus) async {
+  Future<void> updateListStatus(
+      BuildContext context, String listId, String newStatus) async {
     try {
       final listRef =
           FirebaseFirestore.instance.collection('lists_requests').doc(listId);
-
       DocumentSnapshot doc = await listRef.get();
       if (!doc.exists) {
-        _showMessage('القائمة غير موجودة', success: false);
+        _showMessage(context, 'القائمة غير موجودة', success: false);
         return;
       }
 
@@ -34,7 +34,7 @@ class _AdminScreenState extends State<AdminScreen> {
       String listName = data['listName'] ?? 'القائمة';
 
       if (userId == null || userId.isEmpty) {
-        _showMessage('خطأ: معرّف المستخدم غير موجود في بيانات القائمة',
+        _showMessage(context, 'خطأ: معرّف المستخدم غير موجود في بيانات القائمة',
             success: false);
         return;
       }
@@ -48,14 +48,33 @@ class _AdminScreenState extends State<AdminScreen> {
             'listCode': uniqueCode,
             'updatedAt': FieldValue.serverTimestamp(),
           });
-          _showMessage('تمت الموافقة وتوليد الكود: $uniqueCode', success: true);
+          _showMessage(context, 'تمت الموافقة وتوليد الكود: $uniqueCode',
+              success: true);
         } else {
           await listRef.update({
             'status': newStatus,
             'updatedAt': FieldValue.serverTimestamp(),
           });
-          _showMessage('تمت الموافقة بنجاح', success: true);
+          _showMessage(context, 'تمت الموافقة بنجاح', success: true);
         }
+
+        // نسخ البيانات إلى approved_lists مع إضافة الحقول الإضافية
+        await FirebaseFirestore.instance.collection('approved_list').add({
+          'listName': listName,
+          'userId': userId,
+          'listCode': uniqueCode,
+          'status': newStatus,
+          'createdAt': data['createdAt'] ?? FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'candidatesCount': data['candidatesCount'] ?? 0,
+          'delegate': data['delegate'] ?? {},
+          'members': data['members'] ?? [],
+          'uploadedFiles': data['uploadedFiles'] ?? {},
+          'constituency':
+              data['constituency'] ?? 'غير محدد', // إضافة constituency
+        });
+        _showMessage(context, 'تم نقل القائمة إلى قوائم الموافق عليها',
+            success: true);
 
         await FirebaseFirestore.instance.collection('notifications').add({
           'userId': userId,
@@ -64,13 +83,13 @@ class _AdminScreenState extends State<AdminScreen> {
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,
         });
-        _showMessage('تم إنشاء إشعار للمستخدم بنجاح', success: true);
+        _showMessage(context, 'تم إنشاء إشعار للمستخدم بنجاح', success: true);
       } else {
         await listRef.update({
           'status': newStatus,
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        _showMessage('تم الرفض بنجاح', success: true);
+        _showMessage(context, 'تم الرفض بنجاح', success: true);
 
         await FirebaseFirestore.instance.collection('notifications').add({
           'userId': userId,
@@ -80,22 +99,23 @@ class _AdminScreenState extends State<AdminScreen> {
           'timestamp': FieldValue.serverTimestamp(),
           'isRead': false,
         });
-        _showMessage('تم إنشاء إشعار رفض للمستخدم بنجاح', success: true);
+        _showMessage(context, 'تم إنشاء إشعار رفض للمستخدم بنجاح',
+            success: true);
       }
     } catch (e) {
-      _showMessage('حدث خطأ أثناء تحديث الحالة أو إنشاء الإشعار: $e',
+      _showMessage(context, 'حدث خطأ أثناء تحديث الحالة أو إنشاء الإشعار: $e',
           success: false);
     }
   }
 
-  Future<void> updateFormStatus(String formId, String newStatus) async {
+  Future<void> updateFormStatus(
+      BuildContext context, String formId, String newStatus) async {
     try {
       final formRef =
           FirebaseFirestore.instance.collection('forms').doc(formId);
-
       DocumentSnapshot doc = await formRef.get();
       if (!doc.exists) {
-        _showMessage('الطلب غير موجود', success: false);
+        _showMessage(context, 'الطلب غير موجود', success: false);
         return;
       }
 
@@ -104,7 +124,7 @@ class _AdminScreenState extends State<AdminScreen> {
       String nationalId = data['الرقم الوطني'] ?? 'طلب ترشح';
 
       if (userId == null || userId.isEmpty) {
-        _showMessage('خطأ: معرّف المستخدم غير موجود في بيانات الطلب',
+        _showMessage(context, 'خطأ: معرّف المستخدم غير موجود في بيانات الطلب',
             success: false);
         return;
       }
@@ -120,30 +140,31 @@ class _AdminScreenState extends State<AdminScreen> {
         notificationTitle = 'تمت الموافقة على طلب الترشح';
         notificationMessage =
             'تمت الموافقة على طلب ترشحك (الرقم الوطني: $nationalId).';
-        _showMessage('تمت الموافقة بنجاح', success: true);
+        _showMessage(context, 'تمت الموافقة بنجاح', success: true);
       } else {
         notificationTitle = 'تم رفض طلب الترشح';
         notificationMessage =
             'تم رفض طلب ترشحك (الرقم الوطني: $nationalId). يرجى التواصل مع الإدارة لمزيد من التفاصيل.';
-        _showMessage('تم الرفض بنجاح', success: true);
+        _showMessage(context, 'تم الرفض بنجاح', success: true);
       }
 
       await FirebaseFirestore.instance.collection('notifications').add({
         'userId': userId,
         'title': notificationTitle,
-        'message': notificationMessage,
+        'messagelist': notificationMessage,
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
       });
 
-      _showMessage('تم إنشاء إشعار للمستخدم بنجاح', success: true);
+      _showMessage(context, 'تم إنشاء إشعار للمستخدم بنجاح', success: true);
     } catch (e) {
-      _showMessage('حدث خطأ أثناء تحديث الحالة أو إنشاء الإشعار: $e',
+      _showMessage(context, 'حدث خطأ أثناء تحديث الحالة أو إنشاء الإشعار: $e',
           success: false);
     }
   }
 
-  void _showMessage(String message, {bool success = false}) {
+  void _showMessage(BuildContext context, String message,
+      {bool success = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, textAlign: TextAlign.center),
@@ -295,6 +316,12 @@ class _AdminScreenState extends State<AdminScreen> {
                               children: [
                                 Text('الحالة: $status'),
                                 Text('الكود: $listCode'),
+                                if (status == 'approved' &&
+                                    listCode != 'غير متوفر')
+                                  Text(
+                                    'رمز القائمة: $listCode',
+                                    style: const TextStyle(color: Colors.green),
+                                  ),
                               ],
                             ),
                             trailing: status == 'approved'
@@ -309,7 +336,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           ElevatedButton(
                                             onPressed: () async {
                                               await updateListStatus(
-                                                  list.id, 'approved');
+                                                  context, list.id, 'approved');
                                             },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
@@ -331,7 +358,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           OutlinedButton(
                                             onPressed: () async {
                                               await updateListStatus(
-                                                  list.id, 'rejected');
+                                                  context, list.id, 'rejected');
                                             },
                                             style: OutlinedButton.styleFrom(
                                               foregroundColor: Colors.red,
@@ -430,7 +457,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           ElevatedButton(
                                             onPressed: () async {
                                               await updateFormStatus(
-                                                  form.id, 'approved');
+                                                  context, form.id, 'approved');
                                             },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
@@ -452,7 +479,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                           OutlinedButton(
                                             onPressed: () async {
                                               await updateFormStatus(
-                                                  form.id, 'rejected');
+                                                  context, form.id, 'rejected');
                                             },
                                             style: OutlinedButton.styleFrom(
                                               foregroundColor: Colors.red,
