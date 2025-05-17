@@ -4,7 +4,7 @@ import 'package:gradproj/back_button.dart';
 import 'package:gradproj/voting/candidates.dart';
 
 import '../home.dart';
-import 'lists_page.dart';
+import 'lists_page.dart'; // افتراض أن ListsPage معرف مسبقًا
 
 class ElectionListsScreen extends StatefulWidget {
   final String districtName;
@@ -15,30 +15,6 @@ class ElectionListsScreen extends StatefulWidget {
 }
 
 class _ElectionListsScreenState extends State<ElectionListsScreen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // حذف updateElectionList لأننا لم نعد نحتاجها مباشرة (يمكن إعادة إضافتها إذا لزم الأمر)
-  Future<List<Map<String, dynamic>>> _fetchLists() async {
-    QuerySnapshot querySnapshot = await _firestore
-        .collection('approved_list')
-        .where('constituency', isEqualTo: widget.districtName)
-        .get();
-
-    return querySnapshot.docs
-        .map((doc) => {
-              "number":
-                  doc["listCode"]?.toString() ?? "", // استخدام listCode كبديل
-              "name": doc["listName"] ?? "",
-              "image": doc["image"] ?? "assets/images/logo.png",
-            })
-        .toList();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Home(
@@ -93,6 +69,11 @@ class _ElectionListsScreenState extends State<ElectionListsScreen> {
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     var listData = docs[index].data() as Map<String, dynamic>;
+                    String listName = listData["listName"] ?? "قائمة بدون اسم";
+                    String image =
+                        listData["image"] ?? "assets/images/logo.png";
+                    // الترقيم التلقائي بناءً على موقع القائمة
+                    String listNumber = (index + 1).toString();
 
                     return ListsPage(
                       onTap: () {
@@ -101,18 +82,17 @@ class _ElectionListsScreenState extends State<ElectionListsScreen> {
                           MaterialPageRoute(
                             builder: (BuildContext context) {
                               return Candidates(
-                                image: listData["image"] ??
-                                    "assets/images/logo.png",
-                                listName: listData["listName"] ?? "",
-                                num: listData["listCode"]?.toString() ?? "",
+                                image: image,
+                                listName: listName,
+                                num: listNumber,
                               );
                             },
                           ),
                         );
                       },
-                      name: listData["listName"] ?? "",
-                      image: listData["image"] ?? "assets/images/logo.png",
-                      number: listData["listCode"]?.toString() ?? "",
+                      name: listName,
+                      image: image,
+                      number: listNumber,
                     );
                   },
                 );

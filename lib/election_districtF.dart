@@ -3,12 +3,9 @@ import 'package:gradproj/back_button.dart';
 import 'package:gradproj/finalResult/final_results.dart';
 import 'package:gradproj/finalResult/initial_result.dart';
 import 'package:gradproj/home.dart';
+import 'package:gradproj/voting/view_lists.dart'; // Correct import for ElectionListsScreen
 
-enum ElectionScreenType {
-  viewLists, // عرض القوائم الانتخابية
-  initialResults, // النتائج الأولية
-  finalResults // النتائج النهائية
-}
+enum ElectionScreenType { viewLists, initialResults, finalResults }
 
 class ElectionDistrictsScreenF extends StatelessWidget {
   final ElectionScreenType screenType;
@@ -113,21 +110,23 @@ class ElectionDistrictsScreenF extends StatelessWidget {
     Widget nextScreen;
     switch (screenType) {
       case ElectionScreenType.viewLists:
-        // يمكنك إضافة صفحة أخرى هنا إذا كنت تريد عرض القوائم
-        nextScreen = Container(); // استبدل بصفحة مناسبة
+        nextScreen = ElectionListsScreen(districtName: districtName);
         break;
       case ElectionScreenType.initialResults:
         nextScreen = InitialResults(districtName: districtName);
         break;
       case ElectionScreenType.finalResults:
-        nextScreen =
-            ElectionResultsScreen(districtName: districtName); // افتراضي
+        nextScreen = ElectionResultsScreen(districtName: districtName);
         break;
     }
 
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => nextScreen),
-    );
+    ).then((value) {
+      print("تم العودة من الشاشة التالية");
+    }).catchError((error) {
+      print("خطأ أثناء التنقل: $error");
+    });
   }
 }

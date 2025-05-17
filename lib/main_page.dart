@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // إضافة Firestore
 import 'package:firebase_auth/firebase_auth.dart'; // إضافة Firebase Auth
 import 'package:flutter/material.dart';
 import 'package:gradproj/back_button.dart';
-import 'package:gradproj/election_district.dart'; // استيراد ElectionScreenType
+import 'package:gradproj/election_districtF.dart';
 import 'package:gradproj/home2.dart';
 import 'package:gradproj/voting/custom_button.dart';
+import 'package:gradproj/voting/voting_lists.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -16,6 +17,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   bool _isLoading = true;
   bool _hasVoted = false;
+  String? _electoralDistrict; // To store the user's electoral district
 
   @override
   void initState() {
@@ -37,7 +39,7 @@ class _MainPageState extends State<MainPage> {
       String userId = user.uid;
       print('Current User ID from FirebaseAuth: $userId');
 
-      // البحث عن المستخدم باستخدام حقل uid داخل الوثيقة
+      // Fetch user document using the uid field
       QuerySnapshot userQuery = await FirebaseFirestore.instance
           .collection('users')
           .where('uid', isEqualTo: userId)
@@ -47,15 +49,17 @@ class _MainPageState extends State<MainPage> {
         var userDoc = userQuery.docs.first;
         setState(() {
           _hasVoted = userDoc.get('isVoting') ?? false;
+          _electoralDistrict = userDoc.get('electoralDistrict') ?? '';
           _isLoading = false;
         });
-        print('User found with UID: $userId, hasVoted: $_hasVoted');
+        print(
+            'User found with UID: $userId, hasVoted: $_hasVoted, electoralDistrict: $_electoralDistrict');
       } else {
         print('No user found with UID field: $userId in users collection');
         setState(() {
           _isLoading = false;
-          _hasVoted =
-              false; // افتراض أن المستخدم لم يصوت إذا لم يتم العثور عليه
+          _hasVoted = false;
+          _electoralDistrict = '';
         });
       }
     } catch (e) {
@@ -63,6 +67,7 @@ class _MainPageState extends State<MainPage> {
       setState(() {
         _isLoading = false;
         _hasVoted = false;
+        _electoralDistrict = '';
       });
     }
   }
@@ -95,11 +100,13 @@ class _MainPageState extends State<MainPage> {
                 text: "القوائم الانتخابية",
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ElectionDistrictsScreen(
-                            screenType: ElectionScreenType.viewLists),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ElectionDistrictsScreenF(
+                        screenType: ElectionScreenType.viewLists,
+                      ),
+                    ),
+                  );
                 },
               ),
             ),
@@ -110,17 +117,30 @@ class _MainPageState extends State<MainPage> {
               onTap: _hasVoted
                   ? _showHasVotedMessage
                   : () {
-                      Navigator.push(
+                      if (_electoralDistrict != null &&
+                          _electoralDistrict!.isNotEmpty) {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ElectionDistrictsScreen(
-                                screenType: ElectionScreenType.viewLists),
-                          ));
+                            builder: (context) => VotingLists(
+                              districtName: _electoralDistrict!,
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('لا يمكن تحديد الدائرة الانتخابية'),
+                            backgroundColor: Colors.red,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     },
               isDisabled: _hasVoted,
             ),
             const SizedBox(height: 124),
-            const CustomBackButton()
+            const CustomBackButton(),
           ],
         ),
       ),

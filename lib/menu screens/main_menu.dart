@@ -134,7 +134,8 @@ class _MenuScreenState extends State<MenuScreen> {
                                 height: 5,
                               ),
                               Text(
-                                userData?['nationalId']?.toString() ?? 'غير متوفر',
+                                userData?['nationalId']?.toString() ??
+                                    'غير متوفر',
                                 style: const TextStyle(
                                     fontSize: 15,
                                     color: Colors.black54,
@@ -145,7 +146,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 height: 5,
                               ),
                               Text(
-                                "الدائرة الانتخابية: ${userData?['electoralDistrict'] ?? 'غير متوفر'}",
+                                userData?['electoralDistrict'] ?? 'غير متوفر',
                                 style: const TextStyle(
                                     fontSize: 15,
                                     color: Colors.black54,

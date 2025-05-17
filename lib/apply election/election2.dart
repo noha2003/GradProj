@@ -33,7 +33,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
     {'label': 'عمر المرشح', 'type': TextInputType.number},
     {'label': 'المحافظة', 'type': TextInputType.text},
     {'label': 'الدائرة الانتخابية للمرشح', 'type': TextInputType.text},
-    {'label': 'نوع المقعد', 'type': TextInputType.text},
   ];
 
   final List<String> fileFields = [
@@ -85,7 +84,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
           _controllers['المحافظة']?.text = userDoc['gover'] ?? '';
           _controllers['عمر المرشح']?.text = userDoc['age']?.toString() ?? '';
           _controllers['الدائرة الانتخابية للمرشح']?.text =
-              userDoc['electoralDistrict'] ?? ''; // Fetch electoralDistrict
+              userDoc['electoralDistrict']?.toString() ?? '';
           isLoading = false;
         });
       } else {
