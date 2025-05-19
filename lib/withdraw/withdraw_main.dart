@@ -20,7 +20,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   String? electoralDistrict;
   String? name;
   bool isLoading = true;
-  String? _documentId; // لتخزين documentId الحقيقي
+  DocumentReference? _userDocRef; // لتخزين مرجع المستند في مجموعة users
 
   @override
   void initState() {
@@ -45,7 +45,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
       if (querySnapshot.docs.isNotEmpty) {
         var userDoc = querySnapshot.docs.first;
-        _documentId = userDoc.id; // تخزين documentId الحقيقي
+        _userDocRef = userDoc.reference; // تخزين مرجع المستند
         Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
 
         setState(() {
@@ -74,50 +74,97 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
     try {
       String? uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null || _documentId == null) {
+      if (uid == null || _userDocRef == null) {
         _showMessage("يجب تسجيل الدخول أولًا!");
         return;
       }
 
-      DocumentSnapshot candidateDoc = await FirebaseFirestore.instance
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_documentId)
+          .where('uid', isEqualTo: uid)
+          .limit(1)
           .get();
 
-      if (candidateDoc.exists) {
-        Map<String, dynamic> candidateData =
-            candidateDoc.data() as Map<String, dynamic>;
+      if (userSnapshot.docs.isEmpty) {
+        _showMessage("لم يتم العثور على بياناتك.");
+        return;
+      }
 
-        if (candidateData['status'] == 'مرشح') {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(_documentId)
-              .update({
-            'status': 'غير مرشح',
-            'withdraw_reason': _reasonController.text.trim(),
-          });
+      DocumentSnapshot candidateDoc = userSnapshot.docs.first;
+      Map<String, dynamic> candidateData =
+          candidateDoc.data() as Map<String, dynamic>;
 
-          await FirebaseFirestore.instance
-              .collection('withdrawn candidates')
-              .doc(_documentId)
-              .set({
-            'name': name,
-            'nationalId': nationalId,
-            'electoralDistrict': electoralDistrict,
-            'withdraw_reason': _reasonController.text.trim(),
-            'withdraw_date': FieldValue.serverTimestamp(), // وقت الانسحاب
-          });
-
-          _showMessage("تم الانسحاب بنجاح!", success: true);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SuccessWithdraw()),
-          );
-        } else {
-          _showMessage("لا يمكن إكمال عملية الانسحاب لأنك لست مرشحًا حاليًا!");
+      if (candidateData['status'] == 'مرشح') {
+        // تحويل nationalId إلى عدد صحيح للمقارنة
+        int? nationalIdInt;
+        try {
+          nationalIdInt = int.parse(nationalId!);
+        } catch (e) {
+          _showMessage("الرقم الوطني غير صالح!");
+          return;
         }
+
+        // البحث عن المستند في approved_list بناءً على listCode
+        QuerySnapshot listSnapshot = await FirebaseFirestore.instance
+            .collection('approved_list')
+            .where('listCode',
+                isEqualTo: _electoralDistrictController.text.trim())
+            .limit(1)
+            .get();
+
+        if (listSnapshot.docs.isEmpty) {
+          _showMessage("كود القائمة غير صحيح أو القائمة غير موجودة!");
+          return;
+        }
+
+        DocumentReference listDocRef = listSnapshot.docs.first.reference;
+
+        // تنفيذ العمليات ضمن معاملة لضمان الاتساق
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          // تحديث حالة المستخدم باستخدام المرجع
+          transaction.update(
+            _userDocRef!,
+            {
+              'status': 'غير مرشح',
+              'withdraw_reason': _reasonController.text.trim(),
+            },
+          );
+
+          // إضافة إلى مجموعة المرشحين المنسحبين
+          transaction.set(
+            FirebaseFirestore.instance
+                .collection('withdrawn candidates')
+                .doc(candidateDoc.id),
+            {
+              'name': name,
+              'nationalId': nationalId,
+              'electoralDistrict': electoralDistrict,
+              'withdraw_reason': _reasonController.text.trim(),
+              'withdraw_date': FieldValue.serverTimestamp(),
+            },
+          );
+
+          // إزالة المرشح من مصفوفة members في approved_list
+          transaction.update(
+            listDocRef,
+            {
+              'members': FieldValue.arrayRemove([
+                {
+                  'name': name,
+                  'nationalId': nationalIdInt,
+                }
+              ]),
+            },
+          );
+        });
+
+        _showMessage("تم الانسحاب بنجاح!", success: true);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SuccessWithdraw()),
+        );
       } else {
-        _showMessage("أنت لست مرشحًا، لا يمكنك الانسحاب!");
+        _showMessage("لا يمكن إكمال عملية الانسحاب لأنك لست مرشحًا حاليًا!");
       }
     } catch (e) {
       _showMessage("حدث خطأ أثناء التحقق: $e");
@@ -149,8 +196,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                     _buildReadOnlyField(
                         "الدائرة الانتخابية", electoralDistrict),
                     const SizedBox(height: 16),
-                    _buildEditableField("رقم القائمة الانتخابية",
-                        _electoralDistrictController, "أدخل رقم القائمة هنا"),
+                    _buildEditableField("كود القائمة",
+                        _electoralDistrictController, "أدخل كود القائمة هنا"),
                     const SizedBox(height: 16),
                     _buildEditableField(
                         "سبب الانسحاب", _reasonController, "أدخل سبب الانسحاب",
@@ -237,7 +284,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
         borderSide:
             const BorderSide(color: Color.fromRGBO(122, 0, 0, 1), width: 1.5),
       ),
-      fillColor: const Color.fromARGB(255, 201, 201, 201), // لون السكني
+      fillColor: const Color.fromARGB(255, 201, 201, 201),
       filled: true,
     );
   }

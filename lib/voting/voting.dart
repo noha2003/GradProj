@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -137,12 +138,16 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                   SubmitButton(
                     onTap: () async {
                       if (selectedCandidates.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("يجب اختيار مرشح واحد على الأقل"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                        AwesomeDialog(
+                          context: context,
+                          dialogType: DialogType.error,
+                          animType: AnimType.scale,
+                          title: 'خطأ',
+                          desc: 'يجب اختيار مرشح واحد على الأقل',
+                          btnOkText: 'حسنًا',
+                          btnOkColor: Colors.red,
+                          btnOkOnPress: () {},
+                        ).show();
                         return;
                       }
 
@@ -203,7 +208,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         resultDocRef = resultQuery.docs.first.reference;
                       }
 
-                      // جلب الوثيقة مرة أخرى للتأكد من وجودها
                       var resultDoc = await resultDocRef.get();
                       List<dynamic> lists = resultDoc.exists
                           ? (resultDoc.data()
@@ -211,16 +215,13 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                               []
                           : [];
 
-                      // البحث عن القائمة في election_results
                       int listIndex = lists.indexWhere(
                           (list) => list['listName'] == widget.name);
 
                       if (listIndex == -1) {
-                        // إضافة القائمة إذا لم تكن موجودة
                         lists.add({
                           'listName': widget.name,
-                          'listCode':
-                              listCode, // إضافة listCode للتوافق مع InitialResults
+                          'listCode': listCode,
                           'totalVotes': selectedCandidates.length,
                           'members': members.map((member) {
                             int memberIndex = members.indexOf(member) + 1;
@@ -234,7 +235,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                           }).toList(),
                         });
                       } else {
-                        // تحديث القائمة الموجودة
                         lists[listIndex]['totalVotes'] =
                             (lists[listIndex]['totalVotes'] ?? 0) +
                                 selectedCandidates.length;
@@ -248,7 +248,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         }
                       }
 
-                      // تحديث وثيقة election_results
                       batch.set(
                         resultDocRef,
                         {
@@ -258,7 +257,6 @@ class _CandidateSelectionPageState extends State<CandidateSelectionPage> {
                         SetOptions(merge: true),
                       );
 
-                      // تحديث حالة التصويت للمستخدم
                       var userQuery = await _firestore
                           .collection('users')
                           .where('uid', isEqualTo: userId)

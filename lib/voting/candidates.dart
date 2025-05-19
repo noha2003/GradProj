@@ -30,7 +30,7 @@ class Candidates extends StatelessWidget {
             ImageLogo(imagePath: image),
             const SizedBox(height: 10),
             Text(
-              "أعضاء $listName",
+              "أعضاء قائمة$listName",
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

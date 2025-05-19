@@ -33,7 +33,7 @@ class _VotingListsState extends State<VotingLists> {
         "image": data["uploadedFiles"] != null &&
                 data["uploadedFiles"]["صورة_رمز_القائمة"] != null
             ? data["uploadedFiles"]["صورة_رمز_القائمة"]
-            : "assets/images/logo.png",
+            : "assets/images/nashama.png",
       });
       index++;
     }
@@ -79,7 +79,7 @@ class _VotingListsState extends State<VotingLists> {
                     itemCount: lists.length,
                     itemBuilder: (context, index) {
                       return ListsPage(
-                        name: lists[index]["name"] ?? "",
+                        name: "قائمة ${lists[index]["name"] ?? ""}",
                         image:
                             lists[index]["image"] ?? "assets/images/logo.png",
                         number: lists[index]["number"] ?? "0",

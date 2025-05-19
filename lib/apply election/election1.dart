@@ -26,7 +26,6 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
   // Fetches the national ID of the logged-in user from the users collection
   Future<String?> _getUserNationalId() async {
     try {
-      // Check if a user is logged in
       User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         setState(() {
@@ -36,26 +35,24 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
         return null;
       }
 
-      // Log the UID for debugging
-      print('Fetching user document for UID: ${user.uid}');
-      // Fetch user document using UID
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+      String uid = user.uid;
+      print('Fetching user document for UID: $uid');
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .where('uid', isEqualTo: uid)
+          .limit(1)
           .get();
 
-      // Check if the user document exists
-      if (!userDoc.exists) {
+      if (querySnapshot.docs.isEmpty) {
         setState(() {
           _errorMessage = 'بيانات المستخدم غير موجودة في قاعدة البيانات';
         });
-        print('Error: User document does not exist for UID: ${user.uid}');
+        print('Error: User document does not exist for UID: $uid');
         return null;
       }
 
-      // Log the document data for debugging
+      var userDoc = querySnapshot.docs.first;
       print('User document data: ${userDoc.data()}');
-      // Extract nationalId
       String? nationalId = userDoc['nationalId']?.toString();
       if (nationalId == null || nationalId.isEmpty) {
         setState(() {
@@ -80,13 +77,11 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
   Future<bool> _validateInput(String listCode, String nationalId) async {
     try {
       print('Validating listCode: $listCode, nationalId: $nationalId');
-      // Query Firestore for the list code
       QuerySnapshot query = await FirebaseFirestore.instance
           .collection('lists_requests')
           .where('listCode', isEqualTo: listCode)
           .get();
 
-      // Check if the list exists
       if (query.docs.isEmpty) {
         setState(() {
           _errorMessage = 'رمز القائمة غير موجود';
@@ -95,36 +90,37 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
         return false;
       }
 
-      // Check if the list is approved
-      var doc = query.docs.first;
-      String status = doc['status'];
-      print('List status: $status');
-      if (status != 'approved') {
-        setState(() {
-          _errorMessage = 'حالة القائمة غير معتمدة';
-        });
-        print('Error: List is not approved');
-        return false;
+      for (var doc in query.docs) {
+        String status = doc['status'];
+        print('List status for doc ${doc.id}: $status');
+        if (status != 'approved') {
+          setState(() {
+            _errorMessage = 'حالة القائمة غير معتمدة';
+          });
+          print('Error: List is not approved for doc ${doc.id}');
+          continue;
+        }
+
+        List<dynamic> members = doc['members'] ?? [];
+        print('Members for doc ${doc.id}: $members');
+        bool idMatch = members
+            .any((member) => member['nationalId'].toString() == nationalId);
+        if (idMatch) {
+          setState(() {
+            _errorMessage = null;
+          });
+          print('Validation successful for doc ${doc.id}');
+          return true;
+        } else {
+          setState(() {
+            _errorMessage = 'رقم الهوية الوطنية غير موجود في القائمة';
+          });
+          print(
+              'Error: nationalId $nationalId not found in members for doc ${doc.id}');
+        }
       }
 
-      // Check if nationalId exists in members array
-      List<dynamic> members = doc['members'] ?? [];
-      print('Members: $members');
-      bool idMatch = members
-          .any((member) => member['nationalId'].toString() == nationalId);
-      if (!idMatch) {
-        setState(() {
-          _errorMessage = 'رقم الهوية الوطنية غير موجود في القائمة';
-        });
-        print('Error: nationalId $nationalId not found in members');
-        return false;
-      }
-
-      setState(() {
-        _errorMessage = null;
-      });
-      print('Validation successful');
-      return true;
+      return false;
     } catch (e) {
       setState(() {
         _errorMessage = 'حدث خطأ أثناء التحقق: $e';
@@ -260,7 +256,6 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
                   onPressed: () async {
                     String listCode = _listCodeController.text.trim();
 
-                    // Clear error message initially
                     setState(() {
                       _errorMessage = null;
                     });
@@ -273,13 +268,11 @@ class _ElectionCodeScreenState extends State<ElectionCodeScreen> {
                       return;
                     }
 
-                    // Fetch user's national ID
                     String? nationalId = await _getUserNationalId();
                     if (nationalId == null) {
-                      return; // Error message already set in _getUserNationalId
+                      return;
                     }
 
-                    // Validate inputs
                     bool isValid = await _validateInput(listCode, nationalId);
                     if (isValid) {
                       Navigator.push(

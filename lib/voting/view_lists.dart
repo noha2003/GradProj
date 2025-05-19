@@ -71,7 +71,7 @@ class _ElectionListsScreenState extends State<ElectionListsScreen> {
                     var listData = docs[index].data() as Map<String, dynamic>;
                     String listName = listData["listName"] ?? "قائمة بدون اسم";
                     String image =
-                        listData["image"] ?? "assets/images/logo.png";
+                        listData["image"] ?? "assets/images/nashama.png";
                     // الترقيم التلقائي بناءً على موقع القائمة
                     String listNumber = (index + 1).toString();
 

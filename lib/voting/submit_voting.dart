@@ -15,7 +15,7 @@ class SubmitVoting extends StatelessWidget {
         const SizedBox(height: 123),
         Image.asset('assets/images/votesubmit.png'),
         const SizedBox(height: 20),
-        const Text("تم الإدلاء بصوتك بنجاح.",
+        const Text("تم الإدلاء بصوتك بنجاح",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.normal,
